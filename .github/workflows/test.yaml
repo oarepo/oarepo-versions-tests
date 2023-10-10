@@ -20,7 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ "3.9", "3.10" ]
+        #python-version: [ "3.9", "3.10" ]
+        python-version: [ "3.10" ]
         oarepo-library: [ "oarepo/oarepo-runtime", "oarepo/oarepo-vocabularies" ]
     env:
       OAREPO_VERSION: ${{ github.event.inputs.oarepo }}
@@ -52,7 +53,14 @@ jobs:
         run: |
           REPO="${{ matrix.oarepo-library }}"
           BASE_URL="https://api.github.com/repos/$REPO"
+          BR="main"
+          function api_get(){
+            URL=${1:-$BASE_URL}
+            shift
+            curl -s -XGET -H "Accept: application/vnd.github.v3+json" -H "authorization: Bearer ${{ secrets.INTEGRATION_TEST }}" -d '{"ref":"'$BR'"}' "$URL" $@
+          }
           echo "REPO=$REPO:  (BASE_URL=$BASE_URL)"
+          api_get "$BASE_URL/actions/runs"
 
 #      - name: Download artifacts
 #        uses: actions/Download-artifact@v3
