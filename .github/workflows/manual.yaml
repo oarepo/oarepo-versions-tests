@@ -9,7 +9,7 @@ on:
         default: 11
 
 jobs:
-  build:
+  call:
     uses: ./.github/workflows/test.yaml
     with:
       oarepo: ${{ github.event.inputs.oarepo }}
