@@ -49,7 +49,7 @@ jobs:
           sudo sysctl -w fs.file-max=262144
           sudo sysctl -w vm.max_map_count=262144
 
-      - name: artifact test 1
+      - name: get requirements for ${{ matrix.oarepo-library }}
         run: |
           REPO="${{ matrix.oarepo-library }}"
           BASE_URL="https://api.github.com/repos/$REPO"
@@ -62,19 +62,15 @@ jobs:
           }
           echo "REPO=$REPO:  (BASE_URL=$BASE_URL)"
           RUN_URL=$(api_get "$BASE_URL/actions/runs" | jq -r '[.workflow_runs[]|select(.conclusion=="success" and .event=="push" and .head_branch=="main")][0]|.url')
-          echo $?
-          echo "RUN_URL=$RUN_URL"
+          echo -e "$?\nRUN_URL=$RUN_URL"
           ARTIFACT_JSON=$(api_get "$RUN_URL/artifacts" | jq -r '.artifacts[]|select(.name=="'$FILE'")')
-          echo $?
-          echo "ARTIFACT_JSON=$ARTIFACT_JSON"
+          echo -e "$?\nARTIFACT_JSON=$ARTIFACT_JSON"
           DOWNLOAD_URL=$(jq -r '.archive_download_url' <<<$(echo $ARTIFACT_JSON))
           echo "DOWNLOAD_URL=$DOWNLOAD_URL"
           LOC=$(api_get "$DOWNLOAD_URL" -i -w '%{redirect_url}' -o /dev/null)
-          echo $?
-          echo "LOC=>$LOC<"
-          echo "$FILE"
-          curl -s -XGET "$LOC" | zcat
-          echo $?
+          echo -e "$?\nLOC=>$LOC<"
+          REQUIREMENTS=$(curl -s -XGET "$LOC" | zcat | sed -n '/^oarepo/p; /^nr/p;')
+          echo -e "$?\n$FILE:\n$REQUIREMENTS"
 
 #      - name: Download artifacts
 #        uses: actions/Download-artifact@v3
