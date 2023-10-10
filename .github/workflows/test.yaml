@@ -57,7 +57,7 @@ jobs:
           function api_get(){
             URL=${1:-$BASE_URL}
             shift
-            curl -s -XGET -H "Accept: application/vnd.github.v3+json" -H "authorization: Bearer ${{ secrets.INTEGRATION_TEST }}" -d '{"ref":"'$BR'"}' "$URL" $@
+            curl -s -XGET -H "Accept: application/vnd.github.v3+json" -H "authorization: Bearer ${{ secrets.INTEGRATION_TEST2 }}" -d '{"ref":"'$BR'"}' "$URL" $@
           }
           echo "REPO=$REPO:  (BASE_URL=$BASE_URL)"
           api_get "$BASE_URL/actions/runs"
