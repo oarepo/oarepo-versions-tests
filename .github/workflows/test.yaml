@@ -78,7 +78,8 @@ jobs:
             echo ">$R<"
             PARS=$(echo "$R" | sed -n '/^\([-a-z0-9]\+\)[<>=]\+\([0-9]\+\)/ { s/^\([-a-z0-9]\+\)[<>=]\+\([0-9]\+\)\..*$/"\1" "\2"/; p; }')
             echo ">$R< >$PARS<"
-          get_latest_pypi_version $PARS
+            get_latest_pypi_version $PARS
+          done
 
 #      - name: Download artifacts
 #        uses: actions/Download-artifact@v3
