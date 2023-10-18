@@ -68,21 +68,17 @@ jobs:
           echo -e "$?\nLOC=>$LOC<"
           REQUIREMENTS=$(curl -s -XGET "$LOC" | zcat | sed -n '/^oarepo/p; /^nr/p;')
           echo -e "$?\nselection from $FILE:\n$REQUIREMENTS"
-          REQFILE="${REPO/\//_}-requirements.txt"
-          echo "$REQUIREMENTS" > "$REQFILE"
-          ls -l $REQFILE
-          echo "$REQFILE:"
-          cat $REQFILE
-          echo "REQUIREMENTS<<EOF" >> $GITHUB_ENV
-          echo "$REQUIREMENTS" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          echo -e "REQUIREMENTS<<EOF\n$REQUIREMENTS\nEOF" >> $GITHUB_ENV
 
       - name: get latest versions
         run: |
-          echo ">$REQUIREMENTS<"
-          echo ">${{ env.REQUIREMENTS }}<"
+          echo -e "REQUIREMENTS:\n$REQUIREMENTS"
           . ./scripts/functions.sh
-          get_latest_pypi_version oarepo 11
+          for R in $REQUIREMENTS; do
+            echo ">$R<"
+            PARS=$(echo "$R" | sed -n '/^\([-a-z0-9]\+\)[<>=]\+\([0-9]\+\)/ { s/^\([-a-z0-9]\+\)[<>=]\+\([0-9]\+\)\..*$/"\1" "\2"/; p; }')
+            echo ">$R< >$PARS<"
+          get_latest_pypi_version $PARS
 
 #      - name: Download artifacts
 #        uses: actions/Download-artifact@v3
