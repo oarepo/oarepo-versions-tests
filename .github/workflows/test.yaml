@@ -98,7 +98,7 @@ jobs:
             fi
             if [[ $REBUID_NEEDED ]]; then
               echo "rebuid $REPO!"
-              api_trig "$REPO" "manual.yml"
+              api_trig "$BASE_URL" "manual.yml"
             fi
           done
 

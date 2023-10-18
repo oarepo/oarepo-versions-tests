@@ -15,9 +15,9 @@ function api_post(){
   api_call "$URL" "POST" $@
 }
 function api_trig(){
-  REPO="$1"
+  URL="$1"
   WFLOW="$2"
-  api_post "https://api.github.com/repos/$REPO/actions/workflows/$WFLOW/dispatches"
+  api_post "$URL/actions/workflows/$WFLOW/dispatches"
 }
 
 function get_latest_pypi_version(){
