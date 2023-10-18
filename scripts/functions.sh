@@ -1,8 +1,23 @@
 
-function api_get(){
-  URL=${1:-$BASE_URL}
+function api_call(){
+  URL=${1:?Err: url missing}
   shift
-  curl -s -XGET -H "Accept: application/vnd.github.v3+json" -H "authorization: Bearer $TOK" -d '{"ref":"'$BR'"}' "$URL" $@
+  METHOD=${2:?Err: method missing}
+  shift
+  curl -s -X$METHOD -H "Accept: application/vnd.github.v3+json" -H "authorization: Bearer $TOK" -d '{"ref":"'$BR'"}' "$URL" $@
+}
+function api_get(){
+  URL="$1"
+  api_call "$URL" "GET" $@
+}
+function api_post(){
+  URL="$1"
+  api_call "$URL" "POST" $@
+}
+function api_trig(){
+  REPO="$1"
+  WFLOW="$2"
+  api_post "https://api.github.com/repos/$REPO/actions/workflows/$WFLOW/dispatches"
 }
 
 function get_latest_pypi_version(){

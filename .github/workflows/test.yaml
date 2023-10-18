@@ -72,6 +72,9 @@ jobs:
 
       - name: get latest versions
         run: |
+          REPO="${{ matrix.oarepo-library }}"
+          BASE_URL="https://api.github.com/repos/$REPO"
+          BR="main"
           echo -e "REQUIREMENTS:\n$REQUIREMENTS"
           . ./scripts/functions.sh
           REGEX="^([-a-z0-9]+)[<>=]+(([0-9]+)\..*)$"
@@ -94,7 +97,8 @@ jobs:
               echo "Unsupported format ($REQ)"
             fi
             if [[ $REBUID_NEEDED ]]; then
-              echo "rebuid!"
+              echo "rebuid $REPO!"
+              api_trig "$REPO" "manual.yml"
             fi
           done
 
