@@ -58,7 +58,8 @@ jobs:
           FILE="requirements.txt"
           . ./scripts/functions.sh
           echo "REPO=$REPO:  (BASE_URL=$BASE_URL)"
-          RUN_URL=$(api_get "$BASE_URL/actions/runs" | jq -r '[.workflow_runs[]|select(.conclusion=="success" and .event=="push" and .head_branch=="main")][0]|.url')
+          RUN_URL=$(api_get "$BASE_URL/actions/runs" | tee runs.json | jq -r '[.workflow_runs[]|select(.conclusion=="success" and .event=="push" and .head_branch=="main")][0]|.url')
+          echo "=== runs.json ==="; cat runs.json; echo "=== ^^^ ==="
           echo -e "$?\nRUN_URL=$RUN_URL"
           ARTIFACT_JSON=$(api_get "$RUN_URL/artifacts" | jq -r '.artifacts[]|select(.name=="'$FILE'")')
           echo -e "$?\nARTIFACT_JSON=$ARTIFACT_JSON"
