@@ -10,7 +10,7 @@ function get_latest_pypi_version(){
   MAJOR=${2:-}
   MINOR=${3:-}
   RE="^${MAJOR:-.+}\\\\.${MINOR:-}${MINOR:+\\\\.}"
-  curl -s "https://pypi.org/pypi/$REPO/json" | jq '
+  curl -s "https://pypi.org/pypi/$REPO/json" | jq -r '
   . as $in | [                                            # save main object
     .releases | keys[] |                                  # get keys of releses
     select(test("'$RE'")) |                               # select by regexp
