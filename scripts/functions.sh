@@ -2,7 +2,7 @@
 function api_call(){
   URL=${1:?Err: url missing}
   shift
-  METHOD=${2:?Err: method missing}
+  METHOD=${1:?Err: method missing}
   shift
   curl -s -X$METHOD -H "Accept: application/vnd.github.v3+json" -H "authorization: Bearer $TOK" -d '{"ref":"'$BR'"}' "$URL" $@
 }
