@@ -55,11 +55,7 @@ jobs:
           BASE_URL="https://api.github.com/repos/$REPO"
           BR="main"
           FILE="requirements.txt"
-          function api_get(){
-            URL=${1:-$BASE_URL}
-            shift
-            curl -s -XGET -H "Accept: application/vnd.github.v3+json" -H "authorization: Bearer ${{ secrets.OAREPO_BOT }}" -d '{"ref":"'$BR'"}' "$URL" $@
-          }
+          . ./scripts/functions.sh
           echo "REPO=$REPO:  (BASE_URL=$BASE_URL)"
           RUN_URL=$(api_get "$BASE_URL/actions/runs" | jq -r '[.workflow_runs[]|select(.conclusion=="success" and .event=="push" and .head_branch=="main")][0]|.url')
           echo -e "$?\nRUN_URL=$RUN_URL"
@@ -70,7 +66,19 @@ jobs:
           LOC=$(api_get "$DOWNLOAD_URL" -i -w '%{redirect_url}' -o /dev/null)
           echo -e "$?\nLOC=>$LOC<"
           REQUIREMENTS=$(curl -s -XGET "$LOC" | zcat | sed -n '/^oarepo/p; /^nr/p;')
-          echo -e "$?\n$FILE:\n$REQUIREMENTS"
+          echo -e "$?\nselection from $FILE:\n$REQUIREMENTS"
+          REQFILE="${REPO/\//_}-requirements.txt"
+          echo "$REQUIREMENTS" > "$REQFILE"
+          ls -l $REQFILE
+          echo "$REQFILE:"
+          cat $REQFILE
+          echo "REQUIREMENTS=\"$REQUIREMENTS\"" >> $GITHUB_ENV
+
+      - name: get latest version of ${{ matrix.oarepo-library }}
+        run: |
+          echo ">$REQUIREMENTS<"
+          . ./scripts/functions.sh
+          get_latest_pypi_version oarepo 11
 
 #      - name: Download artifacts
 #        uses: actions/Download-artifact@v3
