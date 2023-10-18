@@ -2,7 +2,7 @@
 function api_get(){
   URL=${1:-$BASE_URL}
   shift
-  curl -s -XGET -H "Accept: application/vnd.github.v3+json" -H "authorization: Bearer ${{ secrets.OAREPO_BOT }}" -d '{"ref":"'$BR'"}' "$URL" $@
+  curl -s -XGET -H "Accept: application/vnd.github.v3+json" -H "authorization: Bearer $TOK" -d '{"ref":"'$BR'"}' "$URL" $@
 }
 
 function get_latest_pypi_version(){

@@ -25,6 +25,7 @@ jobs:
         oarepo-library: [ "oarepo/oarepo-runtime", "oarepo/oarepo-vocabularies" ]
     env:
       OAREPO_VERSION: ${{ github.event.inputs.oarepo }}
+      TOK: ${{ secrets.OAREPO_BOT }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
