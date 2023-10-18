@@ -75,14 +75,26 @@ jobs:
           echo -e "REQUIREMENTS:\n$REQUIREMENTS"
           . ./scripts/functions.sh
           REGEX="^([-a-z0-9]+)[<>=]+(([0-9]+)\..*)$"
-          for R in $REQUIREMENTS; do
-            if [[ "$R" =~ $REGEX ]]; then
-              echo "package $R ... ${BASH_REMATCH[1]} ${BASH_REMATCH[3]}"
-              LATEST=$(get_latest_pypi_version "${BASH_REMATCH[1]}" "${BASH_REMATCH[3]}")
+          REBUID_NEEDED=
+          for REQ in $REQUIREMENTS; do
+            if [[ "$REQ" =~ $REGEX ]]; then
+              PKG="${BASH_REMATCH[1]}"
               USED="${BASH_REMATCH[2]}"
-              printf "%s\n" "$LATEST" "$USED" | sort -CV && echo "OK" || echo "newer on PyPI"
+              MAJOR="${BASH_REMATCH[3]}"
+              echo "package $REQ ... $PKG $MAJOR"
+              LATEST=$(get_latest_pypi_version "$PKG" "$MAJOR")
+              # version test by status from silent version sort
+              if printf "%s\n" "$LATEST" "$USED" | sort -CV ; then
+                echo "OK"
+              else
+                echo "newer on PyPI (latest:$LATEST, used:$USED) => rebuild needed"
+                REBUID_NEEDED=1
+              fi
             else
-              echo "Unsupported format ($R)"
+              echo "Unsupported format ($REQ)"
+            fi
+            if [[ $REBUID_NEEDED ]]; then
+              echo "rebuid!"
             fi
           done
 
