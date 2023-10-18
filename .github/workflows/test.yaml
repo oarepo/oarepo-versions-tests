@@ -77,9 +77,9 @@ jobs:
           REGEX="^([-a-z0-9]+)[<>=]+(([0-9]+)\..*)$"
           for R in $REQUIREMENTS; do
             if [[ "$R" =~ $REGEX ]]; then
-              echo "package $R ... ${BASH_REMATCH[1] ${BASH_REMATCH[3]"
-              LATEST=$(get_latest_pypi_version "${BASH_REMATCH[1]" "${BASH_REMATCH[3]")
-              USED="${BASH_REMATCH[2]"
+              echo "package $R ... ${BASH_REMATCH[1]} ${BASH_REMATCH[3]}"
+              LATEST=$(get_latest_pypi_version "${BASH_REMATCH[1]}" "${BASH_REMATCH[3]}")
+              USED="${BASH_REMATCH[2]}"
               printf "%s\n" "$LATEST" "$USED" | sort -CV && echo "OK" || echo "newer on PyPI"
             else
               echo "Unsupported format ($R)"
