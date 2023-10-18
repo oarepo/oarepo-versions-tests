@@ -73,11 +73,14 @@ jobs:
           ls -l $REQFILE
           echo "$REQFILE:"
           cat $REQFILE
-          echo "REQUIREMENTS=\"$REQUIREMENTS\"" >> $GITHUB_ENV
+          echo "REQUIREMENTS<<EOF" >> $GITHUB_ENV
+          echo "$REQUIREMENTS" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
-      - name: get latest version of ${{ matrix.oarepo-library }}
+      - name: get latest versions
         run: |
           echo ">$REQUIREMENTS<"
+          echo ">${{ env.REQUIREMENTS }}<"
           . ./scripts/functions.sh
           get_latest_pypi_version oarepo 11
 
