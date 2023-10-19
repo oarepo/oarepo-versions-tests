@@ -87,11 +87,12 @@ jobs:
               MAJOR="${BASH_REMATCH[3]}"
               echo -n "package $REQ ($PKG $MAJOR) ... "
               LATEST=$(get_latest_pypi_version "$PKG" "$MAJOR")
+              echo -n "latest:$LATEST, used:$USED ... "
               # version test by status from silent version sort
               if printf "%s\n" "$LATEST" "$USED" | sort -CV ; then
                 echo "OK"
               else
-                echo "newer on PyPI (latest:$LATEST, used:$USED) => rebuild needed"
+                echo "newer on PyPI => rebuild needed"
                 REBUID_NEEDED=1
               fi
             else
@@ -109,6 +110,7 @@ jobs:
             echo "=== $F ==="
             cat "$F"
             echo -e "=== ^^^ ===\n"
+          done
 
 #      - name: Download artifacts
 #        uses: actions/Download-artifact@v3
