@@ -20,9 +20,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
+        oarepo-library: [ "oarepo/oarepo-runtime", "oarepo/oarepo-vocabularies", "oarepo/oarepo-upload-cli" ]
         #python-version: [ "3.9", "3.10" ]
         python-version: [ "3.10" ]
-        oarepo-library: [ "oarepo/oarepo-runtime", "oarepo/oarepo-vocabularies", "oarepo/oarepo-upload-cli" ]
     env:
       OAREPO_VERSION: ${{ github.event.inputs.oarepo }}
       TOK: ${{ secrets.OAREPO_BOT }}
@@ -113,9 +113,11 @@ jobs:
             fi
           done
           if [[ $REBUID_NEEDED ]]; then
-            echo "calling rebuid $REPO (manual.yaml)":
+            echo -e "\n-->calling rebuid $REPO (manual.yaml)":
             api_trig "$BASE_URL" "manual.yaml"
             echo "return status: $?"
+          else
+            echo -e "\n-->rebuild not necessary"
           fi
 
       - name: debug
