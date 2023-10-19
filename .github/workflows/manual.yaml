@@ -10,6 +10,6 @@ on:
 
 jobs:
   call:
-    uses: ./.github/workflows/test.yaml
+    uses: ./.github/workflows/check_versions.yaml
     with:
       oarepo: ${{ github.event.inputs.oarepo }}

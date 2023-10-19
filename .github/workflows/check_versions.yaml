@@ -21,7 +21,6 @@ jobs:
     strategy:
       matrix:
         oarepo-library: [ "oarepo/oarepo-runtime", "oarepo/oarepo-vocabularies", "oarepo/oarepo-upload-cli" ]
-        #python-version: [ "3.9", "3.10" ]
         python-version: [ "3.10" ]
     env:
       OAREPO_VERSION: ${{ github.event.inputs.oarepo }}
@@ -88,7 +87,7 @@ jobs:
           REPO="${{ matrix.oarepo-library }}"
           BASE_URL="https://api.github.com/repos/$REPO"
           BR="main"
-          echo -e "REQUIREMENTS:\n$REQUIREMENTS"
+          echo -e "REQUIREMENTS:\n$REQUIREMENTS\n"
           . ./scripts/functions.sh
           REGEX="^([-a-z0-9]+)[<>=]+(([0-9]+)\..*)$"
           REBUID_NEEDED=
