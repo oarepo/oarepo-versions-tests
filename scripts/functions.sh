@@ -1,34 +1,36 @@
 
 function api_call(){
-  URL="$1"
+  local url="$1"
   shift
-  METHOD="$1"
+  local method="$1"
   shift
-  curl -s -X$METHOD -H "Accept: application/vnd.github.v3+json" -H "authorization: Bearer $TOK" -d '{"ref":"'$BR'"}' "$URL" $@
+  curl -s -X$method -H "Accept: application/vnd.github.v3+json" -H "authorization: Bearer $TOK" -d '{"ref":"'$BR'"}' "$url" $@
 }
 function api_get(){
-  URL="$1"
-  api_call "$URL" "GET" $@
+  local url="$1"
+  shift
+  api_call "$url" "GET" $@
 }
 function api_post(){
-  URL="$1"
-  api_call "$URL" "POST" $@
+  local url="$1"
+  shift
+  api_call "$url" "POST" $@
 }
 function api_trig(){
-  URL="$1"
-  WFLOW="$2"
-  api_post "$URL/actions/workflows/$WFLOW/dispatches"
+  local url="$1"
+  local wflow="$2"
+  api_post "$url/actions/workflows/$wflow/dispatches"
 }
 
 function get_latest_pypi_version(){
-  REPO=$1
-  MAJOR=${2:-}
-  MINOR=${3:-}
-  RE="^${MAJOR:-.+}\\\\.${MINOR:-}${MINOR:+\\\\.}"
-  curl -s "https://pypi.org/pypi/$REPO/json" | jq -r '
+  local repo=$1
+  local major=${2:-}
+  local minor=${3:-}
+  local re="^${major:-.+}\\\\.${minor:-}${minor:+\\\\.}"
+  curl -s "https://pypi.org/pypi/$repo/json" | jq -r '
   . as $in | [                                            # save main object
     .releases | keys[] |                                  # get keys of releses
-    select(test("'$RE'")) |                               # select by regexp
+    select(test("'$re'")) |                               # select by regexp
     {version:.}+{files:$in.releases[.]} |                 # build objects with "version" inside
     select(.files[0].yanked or .files[1].yanked | not)    # filter out yanked releases
   ] |                                                     # make array
