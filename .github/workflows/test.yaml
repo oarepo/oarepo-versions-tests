@@ -1,4 +1,4 @@
-name: Test
+name: Get requirements and check version
 
 on:
   workflow_call:
@@ -16,7 +16,7 @@ on:
         default: 11
 
 jobs:
-  build:
+  check:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -59,6 +59,7 @@ jobs:
           . ./scripts/functions.sh
           mkdir -p tmp
           echo "REPO=$REPO:  (BASE_URL=$BASE_URL)"
+          # download list of actions runs, filter it and grab url:
           RUN_URL=$(api_get "$BASE_URL/actions/runs" | tee tmp/runs.json | jq -r '
             [
               .workflow_runs[]
@@ -67,17 +68,22 @@ jobs:
             |.url
           ')
           echo -e "$?\nRUN_URL=$RUN_URL"
+          # download artifact list and find section with the wanted file:
           ARTIFACT_JSON=$(api_get "$RUN_URL/artifacts" | tee tmp/artifacts.json | jq -r '.artifacts[]|select(.name=="'$FILE'")')
           echo -e "$?\nARTIFACT_JSON=$ARTIFACT_JSON"
+          # grab download url:
           DOWNLOAD_URL=$(jq -r '.archive_download_url' <<<$(echo $ARTIFACT_JSON))
           echo "DOWNLOAD_URL=$DOWNLOAD_URL"
+          # get real url:
           LOC=$(api_get "$DOWNLOAD_URL" -i -w '%{redirect_url}' -o /dev/null)
           echo -e "$?\nLOC=>$LOC<"
+          # download, unzip and filter the file
           REQUIREMENTS=$(curl -s -XGET "$LOC" | zcat | sed -n '/^oarepo/p; /^nr/p;')
           echo -e "$?\nselection from $FILE:\n$REQUIREMENTS"
+          # save selected requirements to env
           echo -e "REQUIREMENTS<<EOF\n$REQUIREMENTS\nEOF" >> $GITHUB_ENV
 
-      - name: get latest versions
+      - name: get latest versions, check and trig. rebuild if needed
         run: |
           REPO="${{ matrix.oarepo-library }}"
           BASE_URL="https://api.github.com/repos/$REPO"
@@ -92,6 +98,7 @@ jobs:
               USED="${BASH_REMATCH[2]}"
               MAJOR="${BASH_REMATCH[3]}"
               echo -n "package $REQ ($PKG $MAJOR) ... "
+              # get latest version from PyPI
               LATEST=$(get_latest_pypi_version "$PKG" "$MAJOR")
               echo -n "latest:$LATEST, used:$USED ... "
               # version test by status from silent version sort
@@ -118,15 +125,3 @@ jobs:
             cat "$F"
             echo -e "=== ^^^ ===\n"
           done
-
-#      - name: Download artifacts
-#        uses: actions/Download-artifact@v3
-#        with:
-#          name: dist
-#          path: dist
-
-#      - name: Archive production artifacts
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: requirements.txt
-#          path: requirements.txt
