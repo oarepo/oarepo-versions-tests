@@ -101,7 +101,7 @@ jobs:
           done
           if [[ $REBUID_NEEDED ]]; then
             echo "rebuid $REPO!"
-            api_trig "$BASE_URL" "manual.yml"
+            api_trig "$BASE_URL" "manual.yaml"
           fi
 
       - name: debug
