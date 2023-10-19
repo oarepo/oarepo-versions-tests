@@ -22,7 +22,7 @@ jobs:
       matrix:
         #python-version: [ "3.9", "3.10" ]
         python-version: [ "3.10" ]
-        oarepo-library: [ "oarepo/oarepo-runtime", "oarepo/oarepo-vocabularies" ]
+        oarepo-library: [ "oarepo/oarepo-runtime", "oarepo/oarepo-vocabularies", "oarepo/oarepo-upload-cli" ]
     env:
       OAREPO_VERSION: ${{ github.event.inputs.oarepo }}
       TOK: ${{ secrets.OAREPO_BOT }}
