@@ -31,8 +31,8 @@ jobs:
         env:
           REQS: ${{ needs.calljob.outputs.requirements }}
         run: |
-          echo "steps.step1.outputs.requirements: ${{ needs.calljob.outputs.requirements }}"
+          #echo "steps.step1.outputs.requirements: ${{ needs.calljob.outputs.requirements }}"
           echo "requirements:>${{ fromJson(needs.calljob.outputs.requirements) }}<"
-          echo "${{ needs.calljob.outputs.requirements }}" | jq -r '.[]'
+          #echo "${{ needs.calljob.outputs.requirements }}" | jq -r '.[]'
           echo "REQS: $REQS"
           echo "env.REQS: ${{ env.REQS }}"
