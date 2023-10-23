@@ -31,12 +31,9 @@ jobs:
         id: step1
         run: |
           REPO="${{ github.event.inputs.repo-name }}"
-          REQS="oarepo-model-builder==4.0.54;oarepo-model-builder-files==4.0.7;oarepo-model-builder-tests==4.0.4;oarepo==11.0.48"
-          REQUIREMENTS="$(echo $REQS | tr ';' '\n')"
+          declare -a ARR
+          ARR=( "oarepo-model-builder==4.0.54" "oarepo-model-builder-files==4.0.7" "oarepo-model-builder-tests==4.0.4" "oarepo==11.0.48" )
+          REQUIREMENTS="${ARR[*]}"
           echo -e "$?\nselection from $FILE:\n$REQUIREMENTS"
-          #echo -e "\nrequirements=>$(echo $REQUIREMENTS|tr '\n' ';')<"
-          # save selected requirements to job output
-          #echo -e "requirements=$(echo $REQUIREMENTS|tr '\n' ';')" >> $GITHUB_OUTPUT
-          echo -e "requirements=$(echo $REQUIREMENTS|tr ' ' ';')" >> $GITHUB_OUTPUT
-          # save selected requirements to env
-          echo -e "REQUIREMENTS<<EOF\n$REQUIREMENTS\nEOF" >> $GITHUB_ENV
+          echo -e "\njson:"
+          { echo "requirements="; jq -c -n '$ARGS.positional' --args "${ARR[@]}"; } | tee -a $GITHUB_OUTPUT
