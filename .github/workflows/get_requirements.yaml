@@ -16,15 +16,16 @@ on:
     outputs:
       requirements:
         description: Requirements subset
-        value: ${{ jobs.runjob.outputs.output1 }}
+        value: ${{ jobs.runjob.outputs.requirements }}
 
 jobs:
   runjob:
     runs-on: ubuntu-latest
     env:
       OAREPO_VERSION: ${{ github.event.inputs.oarepo }}
+      FILE: reqirements.txt
     outputs:
-      output1: ${{ steps.step1.outputs.reqs }}
+      requirements: ${{ steps.step1.outputs.requirements }}
     steps:
       - name: get requirements for ${{ github.event.inputs.repo-name }}
         id: step1
@@ -32,6 +33,8 @@ jobs:
           REPO="${{ github.event.inputs.repo-name }}"
           REQUIREMENTS="oarepo-model-builder==4.0.54\noarepo-model-builder-files==4.0.7\noarepo-model-builder-tests==4.0.4\noarepo==11.0.48"
           echo -e "$?\nselection from $FILE:\n$REQUIREMENTS"
-          # save selected requirements to env
+          echo -e "requirements=$(echo $REQUIREMENTS|tr '\n' ';')"
+          # save selected requirements to job output
           echo -e "requirements=$(echo $REQUIREMENTS|tr '\n' ';')" >> $GITHUB_OUTPUT
+          # save selected requirements to env
           echo -e "REQUIREMENTS<<EOF\n$REQUIREMENTS\nEOF" >> $GITHUB_ENV

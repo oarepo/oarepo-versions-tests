@@ -31,3 +31,4 @@ jobs:
         run: |
           echo "steps.step1.outputs.requirements: ${{ needs.calljob.outputs.requirements }}"
           echo "REQUIREMENTS: $REQUIREMENTS"
+          echo "env.REQUIREMENTS: ${{ env.REQUIREMENTS }}"
