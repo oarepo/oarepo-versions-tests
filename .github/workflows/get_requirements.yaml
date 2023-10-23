@@ -11,6 +11,7 @@ on:
       oarepo:
         description: OARepo version (11, 12, ...)
         required: true
+        type: string
         default: 11
     outputs:
       requirements:

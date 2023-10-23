@@ -1,4 +1,4 @@
-name: Dispatch
+name: Test workflow call
 
 on:
   workflow_dispatch:
@@ -12,6 +12,7 @@ on:
       oarepo:
         description: OARepo version (11, 12, ...)
         required: true
+        type: string
         default: 11
 
 jobs:
