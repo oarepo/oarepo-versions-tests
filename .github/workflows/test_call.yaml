@@ -19,6 +19,7 @@ jobs:
   runjob:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
       - name: Call get_requirements
         id: step1
         uses: ./.github/workflows/get_requirements.yaml
