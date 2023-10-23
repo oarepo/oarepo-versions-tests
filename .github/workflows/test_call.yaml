@@ -28,7 +28,10 @@ jobs:
     steps:
       - name: Show outputs
         id: step2
+        env:
+          REQS: ${{ needs.calljob.outputs.requirements }}
         run: |
           echo "steps.step1.outputs.requirements: ${{ needs.calljob.outputs.requirements }}"
-          echo "REQUIREMENTS: $REQUIREMENTS"
-          echo "env.REQUIREMENTS: ${{ env.REQUIREMENTS }}"
+          echo "requirements:>$(echo $REQS| tr ';' '\n')<"
+          echo "REQS: $REQS"
+          echo "env.REQS: ${{ env.REQS }}"
