@@ -33,6 +33,7 @@ jobs:
         run: |
           echo "steps.step1.outputs.requirements: ${{ needs.calljob.outputs.requirements }}"
           echo "requirements:>${{ join(fromJson(needs.calljob.outputs.requirements)) }}<"
-          echo "${{ needs.calljob.outputs.requirements }}" | jq -r '.[]'
+          #echo "${{ needs.calljob.outputs.requirements }}" | jq -r '.[]'
           echo "REQS: $REQS"
           echo "env.REQS: ${{ env.REQS }}"
+          echo "requirements:>${{ join(fromJson(needs.calljob.outputs.requirements),'\n') }}<"
