@@ -28,6 +28,5 @@ jobs:
       - name: Show outputs
         id: step2
         run: |
-        with:
           echo "steps.step1.outputs.requirements: ${{ steps.step1.outputs.requirements }}"
           echo "REQUIREMENTS: $REQUIREMENTS"
