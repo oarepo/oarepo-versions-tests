@@ -31,9 +31,10 @@ jobs:
         id: step1
         run: |
           REPO="${{ github.event.inputs.repo-name }}"
-          REQUIREMENTS="oarepo-model-builder==4.0.54\noarepo-model-builder-files==4.0.7\noarepo-model-builder-tests==4.0.4\noarepo==11.0.48"
+          REQS="oarepo-model-builder==4.0.54;oarepo-model-builder-files==4.0.7;oarepo-model-builder-tests==4.0.4;oarepo==11.0.48"
+          REQUIREMENTS="$(echo $REQS | tr ';' '\n')"
           echo -e "$?\nselection from $FILE:\n$REQUIREMENTS"
-          echo -e "requirements=$(echo $REQUIREMENTS|tr '\n' ';')"
+          echo -e "\nrequirements=>$(echo $REQUIREMENTS|tr '\n' ';')<"
           # save selected requirements to job output
           echo -e "requirements=$(echo $REQUIREMENTS|tr '\n' ';')" >> $GITHUB_OUTPUT
           # save selected requirements to env
