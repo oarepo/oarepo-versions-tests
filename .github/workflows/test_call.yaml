@@ -16,18 +16,18 @@ on:
         default: 11
 
 jobs:
+  calljob:
+    uses: ./.github/workflows/get_requirements.yaml
+    with:
+      repo-name: ${{ github.event.inputs.repo-name }}
+      oarepo: ${{ github.event.inputs.oarepo }}
+
   runjob:
     runs-on: ubuntu-latest
+    needs: calljob
     steps:
-      - uses: actions/checkout@v3
-      - name: Call get_requirements
-        id: step1
-        uses: ./.github/workflows/get_requirements.yaml
-        with:
-          repo-name: ${{ github.event.inputs.repo-name }}
-          oarepo: ${{ github.event.inputs.oarepo }}
       - name: Show outputs
         id: step2
         run: |
-          echo "steps.step1.outputs.requirements: ${{ steps.step1.outputs.requirements }}"
+          echo "steps.step1.outputs.requirements: ${{ needs.calljob.outputs.requirements }}"
           echo "REQUIREMENTS: $REQUIREMENTS"
