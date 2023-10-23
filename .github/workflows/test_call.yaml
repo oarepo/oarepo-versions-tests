@@ -1,0 +1,22 @@
+name: Dispatch
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo-name:
+        description: Repository name (oarepo/oarepo-vocabularies)
+        required: true
+        default: oarepo/oarepo-vocabularies
+        type: choice
+        options: [ "oarepo/oarepo-runtime", "oarepo/oarepo-vocabularies", "oarepo/oarepo-upload-cli" ]
+      oarepo:
+        description: OARepo version (11, 12, ...)
+        required: true
+        default: 11
+
+jobs:
+  call:
+    uses: ./.github/workflows/get_requirements.yaml
+    with:
+      repo-name: ${{ github.event.inputs.repo-name }}
+      oarepo: ${{ github.event.inputs.oarepo }}

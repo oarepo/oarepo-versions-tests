@@ -1,0 +1,36 @@
+name: Get requirements from repo
+
+on:
+  workflow_call:
+    inputs:
+      repo-name:
+        description: Repository name (oarepo/oarepo-vocabularies)
+        required: true
+        default: oarepo/oarepo-vocabularies
+        type: string
+      oarepo:
+        description: OARepo version (11, 12, ...)
+        required: true
+        default: 11
+    outputs:
+      requirements:
+        description: Requirements subset
+        value: ${{ jobs.runjob.outputs.output1 }}
+
+jobs:
+  runjob:
+    runs-on: ubuntu-latest
+    env:
+      OAREPO_VERSION: ${{ github.event.inputs.oarepo }}
+    outputs:
+      output1: ${{ steps.step1.outputs.reqs }}
+    steps:
+      - name: get requirements for ${{ github.event.inputs.repo-name }}
+        id: step1
+        run: |
+          REPO="${{ github.event.inputs.repo-name }}"
+          REQUIREMENTS="oarepo-model-builder==4.0.54\noarepo-model-builder-files==4.0.7\noarepo-model-builder-tests==4.0.4\noarepo==11.0.48"
+          echo -e "$?\nselection from $FILE:\n$REQUIREMENTS"
+          # save selected requirements to env
+          echo -e "requirements=$(echo $REQUIREMENTS|tr '\n' ';')" >> $GITHUB_OUTPUT
+          echo -e "REQUIREMENTS<<EOF\n$REQUIREMENTS\nEOF" >> $GITHUB_ENV
