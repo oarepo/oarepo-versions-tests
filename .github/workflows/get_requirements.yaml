@@ -23,18 +23,48 @@ jobs:
     runs-on: ubuntu-latest
     env:
       OAREPO_VERSION: ${{ github.event.inputs.oarepo }}
+      PYTHON_VERSION: 3.10
       FILE: reqirements.txt
+      TOK: ${{ secrets.OAREPO_BOT }}
     outputs:
       requirements: ${{ steps.step1.outputs.requirements }}
     steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
       - name: get requirements for ${{ github.event.inputs.repo-name }}
         id: step1
         run: |
           REPO="${{ github.event.inputs.repo-name }}"
-          declare -a ARR
-          ARR=( "oarepo-model-builder==4.0.54" "oarepo-model-builder-files==4.0.7" "oarepo-model-builder-tests==4.0.4" "oarepo==11.0.48" )
-          REQUIREMENTS="${ARR[*]}"
+          BASE_URL="https://api.github.com/repos/$REPO"
+          BR="main"
+          FILE="requirements.txt"
+          . ./scripts/functions.sh
+          mkdir -p tmp
+          echo "REPO=$REPO:  (BASE_URL=$BASE_URL)"
+          # download list of actions runs, filter it and grab url:
+          RUN_URL=$(api_get "$BASE_URL/actions/runs" | tee tmp/runs.json | jq -r '
+            [
+              .workflow_runs[]
+              | select(.conclusion=="success" and (.event=="push" or .event=="workflow_dispatch") and .head_branch=="'$BR'")
+            ][0]
+            |.url
+          ')
+          echo -e "$?\nRUN_URL=$RUN_URL"
+          # download artifact list and find section with the wanted file:
+          ARTIFACT_JSON=$(api_get "$RUN_URL/artifacts" | tee tmp/artifacts.json | jq -r '.artifacts[]|select(.name=="'$FILE'")')
+          echo -e "$?\nARTIFACT_JSON=$ARTIFACT_JSON"
+          # grab download url:
+          DOWNLOAD_URL=$(jq -r '.archive_download_url' <<<$(echo $ARTIFACT_JSON))
+          echo "DOWNLOAD_URL=$DOWNLOAD_URL"
+          # get real url:
+          LOC=$(api_get "$DOWNLOAD_URL" -i -w '%{redirect_url}' -o /dev/null)
+          echo -e "$?\nLOC=>$LOC<"
+          # download, unzip and filter the file
+          REQUIREMENTS=$(curl -s -XGET "$LOC" | zcat | sed -n '/^oarepo/p; /^nr/p;')
           echo -e "$?\nselection from $FILE:\n$REQUIREMENTS"
+          # save selected requirements to env
           echo -e "\njson:"
-          #{ echo -n "requirements="; jq -c -n '$ARGS.positional' --args "${ARR[@]}"; } | tee -a $GITHUB_OUTPUT
           { echo -n "requirements="; jq -c -n '$ARGS.positional' --args "${REQUIREMENTS}"; } | tee -a $GITHUB_OUTPUT
