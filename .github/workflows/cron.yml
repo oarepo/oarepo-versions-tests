@@ -14,7 +14,7 @@ on:
     # every sat. at 6:39 GMT
     #- cron: '39 6 * * 6'
     # debug run
-    - cron: '55 13 * * *'
+    - cron: '4 14 * * *'
   workflow_dispatch:
 
 jobs:
@@ -24,7 +24,7 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        branch: [ 'master' ]
+        branch: [ 'main' ]
     steps:
       - name: Trig workflow in ${{ matrix.branch }} br.
         uses: benc-uk/workflow-dispatch@v1
