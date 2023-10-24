@@ -1,0 +1,32 @@
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2022 CESNET.
+#
+# oarepo-versions-tests is free software; you can redistribute it and/or modify it
+# under the terms of the MIT License; see LICENSE file for more details.
+
+name: cron wf wrapper
+
+on:
+  schedule:
+    # every sat. at 7:39 GMT
+#    - cron: '39 7 * * 6'
+    # debug run
+    - cron: '48 13 * * 1'
+  workflow_dispatch:
+
+jobs:
+  cron-wf-trig:
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 1
+      matrix:
+        branch: [ 'master' ]
+    steps:
+      - name: Trig workflow in ${{ matrix.branch }} br.
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: 73216393
+          token: ${{ secrets.OAREPO_BOT }}
+          ref: ${{ matrix.branch }}
