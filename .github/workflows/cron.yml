@@ -14,7 +14,7 @@ on:
     # every sat. at 6:39 GMT
     #- cron: '39 6 * * 6'
     # debug run
-    - cron: '4 14 * * *'
+    #- cron: '4 14 * * *'
   workflow_dispatch:
 
 jobs:
