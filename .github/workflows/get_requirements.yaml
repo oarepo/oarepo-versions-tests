@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       OAREPO_VERSION: ${{ github.event.inputs.oarepo }}
-      PYTHON_VERSION: 3.10
+      PYTHON_VERSION: "3.10"
       FILE: reqirements.txt
       TOK: ${{ secrets.OAREPO_BOT }}
     outputs:
