@@ -9,10 +9,12 @@ name: cron wf wrapper
 
 on:
   schedule:
-    # every sat. at 7:39 GMT
-#    - cron: '39 7 * * 6'
+    # every day at 6:39 GMT
+    - cron: '39 6 * * *'
+    # every sat. at 6:39 GMT
+    #- cron: '39 6 * * 6'
     # debug run
-    - cron: '48 13 * * 1'
+    - cron: '55 13 * * *'
   workflow_dispatch:
 
 jobs:
