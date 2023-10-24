@@ -18,6 +18,7 @@ on:
 jobs:
   calljob:
     uses: ./.github/workflows/get_requirements.yaml
+    secrets: inherit
     with:
       repo-name: ${{ github.event.inputs.repo-name }}
       oarepo: ${{ github.event.inputs.oarepo }}
