@@ -67,4 +67,4 @@ jobs:
           echo -e "$?\nselection from $FILE:\n$REQUIREMENTS"
           # save selected requirements to env
           echo -e "\njson:"
-          { echo -n "requirements="; jq -c -n '$ARGS.positional' --args "${REQUIREMENTS}"; } | tee -a $GITHUB_OUTPUT
+          { echo -n "requirements="; jq -c -n '$ARGS.positional' --args $REQUIREMENTS; } | tee -a $GITHUB_OUTPUT
