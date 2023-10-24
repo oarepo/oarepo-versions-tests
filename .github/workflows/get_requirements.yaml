@@ -36,4 +36,5 @@ jobs:
           REQUIREMENTS="${ARR[*]}"
           echo -e "$?\nselection from $FILE:\n$REQUIREMENTS"
           echo -e "\njson:"
-          { echo -n "requirements="; jq -c -n '$ARGS.positional' --args "${ARR[@]}"; } | tee -a $GITHUB_OUTPUT
+          #{ echo -n "requirements="; jq -c -n '$ARGS.positional' --args "${ARR[@]}"; } | tee -a $GITHUB_OUTPUT
+          { echo -n "requirements="; jq -c -n '$ARGS.positional' --args "${REQUIREMENTS}"; } | tee -a $GITHUB_OUTPUT
