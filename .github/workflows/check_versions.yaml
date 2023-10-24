@@ -1,4 +1,4 @@
-name: Get requirements and check version
+name: Get requirements and check versions
 
 on:
   workflow_call:
