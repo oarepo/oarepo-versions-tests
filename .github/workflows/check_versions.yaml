@@ -16,7 +16,7 @@ on:
         default: 11
 
 jobs:
-  check:
+  ver-check:
     runs-on: ubuntu-latest
     strategy:
       matrix:

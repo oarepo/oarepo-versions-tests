@@ -5,8 +5,7 @@
 # oarepo-versions-tests is free software; you can redistribute it and/or modify it
 # under the terms of the MIT License; see LICENSE file for more details.
 
-name: cron wf wrapper
-
+name: Cron wf call check_versions.yaml
 on:
   schedule:
     # every day at 6:39 GMT
@@ -14,11 +13,11 @@ on:
     # every sat. at 6:39 GMT
     #- cron: '39 6 * * 6'
     # debug run
-    - cron: '56 7 * * *'
+    - cron: '2 8 * * *'
   workflow_dispatch:
 
 jobs:
-  cron-call-wf:
+  cron-call:
     uses: ./.github/workflows/check_versions.yaml
     secrets: inherit
     with:
