@@ -13,7 +13,7 @@ on:
     # every sat. at 6:39 GMT
     #- cron: '39 6 * * 6'
     # debug run
-    - cron: '2 8 * * *'
+    #- cron: '2 8 * * *'
   workflow_dispatch:
 
 jobs:
@@ -22,19 +22,3 @@ jobs:
     secrets: inherit
     with:
       oarepo: 11
-
-#  cron-wf-trig:
-#    if: "!contains(github.event.head_commit.message, '[skip ci]')"
-#    runs-on: ubuntu-latest
-#    strategy:
-#      max-parallel: 1
-#      matrix:
-#        branch: [ 'main' ]
-#    steps:
-#      - name: Trig workflow in ${{ matrix.branch }} br.
-#        uses: benc-uk/workflow-dispatch@v1
-#        with:
-#          # .github/workflows/check_versions.yaml
-#          workflow: 73216393
-#          token: ${{ secrets.OAREPO_BOT }}
-#          ref: ${{ matrix.branch }}
