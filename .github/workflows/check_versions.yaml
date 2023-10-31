@@ -96,14 +96,15 @@ jobs:
           # download, unzip and filter the file
           REQUIREMENTS=$(curl -s -XGET "$LOC" | zcat | sed -n '/^oarepo/p; /^nr/p;')
           echo -e "$?\nselection from $FILE:\n$REQUIREMENTS"
-          # save selected requirements to env
+          # save selected requirements and branch to env
           echo -e "REQUIREMENTS<<EOF\n$REQUIREMENTS\nEOF" >> $GITHUB_ENV
+          echo "BR=$BR" >> $GITHUB_ENV
 
       - name: get latest versions, check and trig. rebuild if needed
         run: |
           REPO="${{ matrix.oarepo-library }}"
           BASE_URL="https://api.github.com/repos/$REPO"
-          BR="main"
+          echo -e "branch: $BR\n"
           echo -e "REQUIREMENTS:\n$REQUIREMENTS\n"
           . ./scripts/functions.sh
           REGEX="^([-a-z0-9]+)[<>=]+(([0-9]+)\..*)$"
