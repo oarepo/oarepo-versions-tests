@@ -20,7 +20,21 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        oarepo-library: [ "oarepo/oarepo-runtime", "oarepo/oarepo-vocabularies", "oarepo/oarepo-upload-cli" ]
+        oarepo-library:
+          - oarepo/oarepo-runtime
+          - oarepo/oarepo-vocabularies
+          - oarepo/oarepo-upload-cli
+          - oarepo/oarepo-model-builder
+          - oarepo/oarepo-model-builder-files
+          - oarepo/oarepo-model-builder-vocabularies
+          - oarepo/oarepo-model-builder-relations
+          - oarepo/oarepo-model-builder-multilingual
+          - oarepo/oarepo-model-builder-tests
+          - oarepo/oarepo-model-builder-cf
+          - oarepo/oarepo-model-builder-requests
+          - oarepo/oarepo-model-builder-polymorphic
+          - oarepo/oarepo-model-builder-ui
+          - Narodni-repozitar/nr-model
         python-version: [ "3.10" ]
     env:
       OAREPO_VERSION: ${{ github.event.inputs.oarepo }}
@@ -53,10 +67,13 @@ jobs:
         run: |
           REPO="${{ matrix.oarepo-library }}"
           BASE_URL="https://api.github.com/repos/$REPO"
-          BR="main"
           FILE="requirements.txt"
           . ./scripts/functions.sh
           mkdir -p tmp
+          BASE_URL2="https://github.com/$REPO"
+          echo -e "\n$REPO\n($BASE_URL2)\nget default branch:"
+          BR=$(curl -s -XGET -H "Accept: application/json" "$BASE_URL2" | jq -r '.payload.repo.defaultBranch')
+          echo " ... branch $BR"
           echo "REPO=$REPO:  (BASE_URL=$BASE_URL)"
           # download list of actions runs, filter it and grab url:
           RUN_URL=$(api_get "$BASE_URL/actions/runs" | tee tmp/runs.json | jq -r '
