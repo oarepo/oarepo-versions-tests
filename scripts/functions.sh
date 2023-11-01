@@ -34,7 +34,7 @@ function get_latest_pypi_version(){
     {version:.}+{files:$in.releases[.]} |                 # build objects with "version" inside
     select(.files[0].yanked or .files[1].yanked | not)    # filter out yanked releases
   ] |                                                     # make array
-  max_by(.version|split(".")|map(tonumber)) |             # get max by numberized version string
+  max_by(.files[0].upload_time) |                         # get max by file upload time
   .version                                                # return latest matched version
   '
 }
