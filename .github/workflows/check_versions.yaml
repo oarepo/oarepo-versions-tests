@@ -35,6 +35,9 @@ jobs:
           - oarepo/oarepo-model-builder-polymorphic
           - oarepo/oarepo-model-builder-ui
           - Narodni-repozitar/nr-model
+          - oarepo/oarepo-model-builder-drafts
+          - oarepo/oarepo-model-builder-drafts-files
+          - oarepo/oarepo-model-builder-communities
         python-version: [ "3.10" ]
     env:
       OAREPO_VERSION: ${{ github.event.inputs.oarepo }}
