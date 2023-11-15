@@ -38,6 +38,7 @@ jobs:
           - oarepo/oarepo-model-builder-drafts
           - oarepo/oarepo-model-builder-drafts-files
           - oarepo/oarepo-model-builder-communities
+          - Molecular-Biophysics-Database/mbdb-app
         python-version: [ "3.10" ]
     env:
       OAREPO_VERSION: ${{ github.event.inputs.oarepo }}
