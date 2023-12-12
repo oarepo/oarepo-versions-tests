@@ -93,7 +93,7 @@ jobs:
           else
             TAG=""
           fi
-          echo -e "$REPO\t$RUNCONCLUSION\t$RUNDATE\t$SUCCDATE\tTAG" > "$FILE"
+          echo -e "$REPO\t$RUNCONCLUSION\t$RUNDATE\t$SUCCDATE\t$TAG" > "$FILE"
           echo -e "FILE=$FILE\nARTIF_NAME=${REPO//\//_}" >> $GITHUB_ENV
       - name: Upload artifact
         uses: actions/upload-artifact@v3
@@ -128,16 +128,18 @@ jobs:
             echo ">$OLIB<"
             cat "$TMP_DIR/${OLIB//\//_}/${OLIB//\//_}.txt"
             read REPO STATUS RUNDATE SUCCDATE TAG < "$TMP_DIR/${OLIB//\//_}/${OLIB//\//_}.txt"
+            TAGLBL="${TAG:+tag }$TAG"
             REPO_URL="https://github.com/$OLIB"
-            BADGE_URL="$REPO_URL/actions/workflows/manual.yaml/badge.svg"
+            #BADGE_URL="$REPO_URL/actions/workflows/manual.yaml/badge.svg"
             {
-              echo "* [![$REPO - $STATUS]($BADGE_URL) $REPO]($REPO_URL)\\"
+              #echo "* [![$REPO - $STATUS]($BADGE_URL) $REPO]($REPO_URL)\\"
+              echo "* [$REPO]($REPO_URL)\\"
               echo "$STATUS: $(date '+%Y-%m-%d %H:%M:%S' -d "$RUNDATE")"
               if [[ "$STATUS" == "success" ]]; then
-                echo " tag $TAG"
+                echo " $TAGLBL"
               else
                 echo "\\"
-                echo "last success: $(date '+%Y-%m-%d %H:%M:%S' -d "$SUCCDATE") tag $TAG"
+                echo "last success: $(date '+%Y-%m-%d %H:%M:%S' -d "$SUCCDATE") $TAGLBL"
               fi
               echo ""
             } >> ./pages/index.md
