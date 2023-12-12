@@ -57,12 +57,12 @@ jobs:
       BOT: oarepo-bot
       TMP_DIR: /tmp/data
       REPO: ${{ matrix.library }}
+      BASE_URL: https://api.github.com/repos/${{ matrix.oarepo-library }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Get default branch for ${{ matrix.library }}
         run: |
-          BASE_URL="https://api.github.com/repos/$REPO"
           . ./scripts/functions.sh
           echo -e "\n$REPO\n($BASE_URL)\nget default branch:"
           BR=$(api_call "$BASE_URL" | jq -r '.default_branch')
@@ -70,12 +70,11 @@ jobs:
           echo "BR=$BR" >> $GITHUB_ENV
       - name: Get trigrun data for ${{ matrix.library }}
         run: |
-          BASE_URL="https://api.github.com/repos/$REPO"
           . ./scripts/functions.sh
           echo "api_get_trigrun (for $REPO):"
-          read RUNDATE RUNCONCLUSION RREF RWF <<<$(api_get_trigrun "$BASE_URL")
+          read RUNDATE RUNCONCLUSION RREF RWF RUNURL <<<$(api_get_trigrun "$BASE_URL")
           sleep 1
-          read SUCCDATE SUCCCONCLUSION SREF SWF <<<$(api_get_trigrun "$BASE_URL" success)
+          read SUCCDATE SUCCCONCLUSION SREF SWF SUCCURL <<<$(api_get_trigrun "$BASE_URL" success)
           echo "RUNCONCLUSION=$RUNCONCLUSION RUNDATE=$RUNDATE SUCCDATE=$SUCCDATE SREF=$SREF RWF=$RWF"
           if [[ "$RUNCONCLUSION" != "success" && -n "$SUCCDATE" ]]; then
             # last run failed and there is at least one succ.run
@@ -83,6 +82,7 @@ jobs:
             if [[ $S_AGE -lt 86400 ]]; then
               # succ.run less then 1 day old
               echo "notification trigger!"
+              #mm_msg "test $(date '+%y%m%d-%H%M%S')" ${{ secrets.MM_CHANNEL }}
             fi
           fi
           mkdir -p ${{ env.TMP_DIR }}

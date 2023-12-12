@@ -33,7 +33,7 @@ function api_get_trigrun(){
       | select($cond)
     ]
     | sort_by(.run_started_at) | reverse [$idx]
-    | [.run_started_at,.conclusion,.referenced_workflows[0].ref,.path]
+    | [.run_started_at,.conclusion,.referenced_workflows[0].ref,.path,.url]
     |@tsv
   "
 }
@@ -53,4 +53,15 @@ function get_latest_pypi_version(){
   max_by(.files[0].upload_time) |                         # get max by file upload time
   .version                                                # return latest matched version
   '
+}
+
+function mm_msg(){
+  local msg="${1:-Incoming Webhook test $(date '+%y%m%d-%H%M%S')}"
+  shift
+  local channel="$1"
+  shift
+  local url="${MM_OAREPO_WH:?Error, MM_OAREPO_WH undefined}"
+  local opts='-H "Content-Type: application/json"'
+  local data="{\"text\":\"$msg\"${channel:+, \"channel\":\"$channel\"}}"
+  curl -s -X POST -H "Content-Type: application/json" -d "$data" "$url"
 }

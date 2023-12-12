@@ -16,80 +16,58 @@ on:
         default: 11
 
 jobs:
+  load-matrix-job:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.load-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set matrix
+        id: load-matrix
+        run: echo "matrix=$(jq -c --raw-input --slurp 'split("\n")|map(select(.!=""))' < ./libraries.txt)" >> $GITHUB_OUTPUT
+      - name: Debug
+        run: |
+          echo "matrix: >${{ steps.load-matrix.outputs.matrix }}<"
+          echo "json:"
+          jq '.' <<<'${{ steps.load-matrix.outputs.matrix }}'
+
   ver-check:
     runs-on: ubuntu-latest
+    needs: load-matrix-job
     strategy:
       matrix:
-        oarepo-library:
-          - oarepo/oarepo-runtime
-          - oarepo/oarepo-vocabularies
-          - oarepo/oarepo-upload-cli
-          - oarepo/oarepo-model-builder
-          - oarepo/oarepo-model-builder-files
-          - oarepo/oarepo-model-builder-vocabularies
-          - oarepo/oarepo-model-builder-relations
-          - oarepo/oarepo-model-builder-multilingual
-          - oarepo/oarepo-model-builder-tests
-          - oarepo/oarepo-model-builder-cf
-          - oarepo/oarepo-model-builder-requests
-          - oarepo/oarepo-model-builder-polymorphic
-          - oarepo/oarepo-model-builder-ui
-          - Narodni-repozitar/nr-model
-          - oarepo/oarepo-model-builder-drafts
-          - oarepo/oarepo-model-builder-drafts-files
-          - oarepo/oarepo-model-builder-communities
-          - Molecular-Biophysics-Database/mbdb-app
+        oarepo-library: ${{ fromJson(needs.load-matrix-job.outputs.matrix) }}
         python-version: [ "3.10" ]
     env:
       OAREPO_VERSION: ${{ github.event.inputs.oarepo }}
       TOK: ${{ secrets.OAREPO_BOT }}
+      TMP_DIR: /tmp/data
+      REPO: ${{ matrix.oarepo-library }}
+      BASE_URL: https://api.github.com/repos/${{ matrix.oarepo-library }}
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v3
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Cache pip
-        uses: actions/cache@v3
-        with:
-          # This path is specific to Ubuntu
-          path: ~/.cache/pip
-          # Look to see if there is a cache hit for the corresponding requirements file
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-            ${{ runner.os }}-
+      - name: Checkout
+        uses: actions/checkout@v3
 
-      - name: Configure sysctl limits
+      - name: Get default branch for ${{ matrix.oarepo-library }}
         run: |
-          sudo swapoff -a
-          sudo sysctl -w vm.swappiness=1
-          sudo sysctl -w fs.file-max=262144
-          sudo sysctl -w vm.max_map_count=262144
+          . ./scripts/functions.sh
+          echo -e "\n$REPO\n($BASE_URL)\nget default branch:"
+          BR=$(api_call "$BASE_URL" | jq -r '.default_branch')
+          echo " ... branch $BR"
+          echo "BR=$BR" >> $GITHUB_ENV
 
-      - name: get requirements for ${{ matrix.oarepo-library }}
+      - name: Get requirements for ${{ matrix.oarepo-library }}
         run: |
-          REPO="${{ matrix.oarepo-library }}"
-          BASE_URL="https://api.github.com/repos/$REPO"
           FILE="requirements.txt"
           . ./scripts/functions.sh
-          mkdir -p tmp
-          BASE_URL2="https://github.com/$REPO"
-          echo -e "\n$REPO\n($BASE_URL2)\nget default branch:"
-          BR=$(curl -s -XGET -H "Accept: application/json" "$BASE_URL2" | jq -r '.payload.repo.defaultBranch')
-          echo " ... branch $BR"
+          mkdir -p $TMP_DIR
           echo "REPO=$REPO:  (BASE_URL=$BASE_URL)"
           # download list of actions runs, filter it and grab url:
-          RUN_URL=$(api_get "$BASE_URL/actions/runs?branch=$BR&status=success" | tee tmp/runs.json | jq -r '
-            [
-              .workflow_runs[]
-              | select(.event=="push" or .event=="workflow_dispatch")
-            ][0]
-            |.url
-          ')
+          read SUCCDATE SUCCCONCLUSION SREF SWF RUN_URL <<<$(api_get_trigrun "$BASE_URL" success)
           echo -e "$?\nRUN_URL=$RUN_URL"
           # download artifact list and find section with the wanted file:
-          ARTIFACT_JSON=$(api_get "$RUN_URL/artifacts" | tee tmp/artifacts.json | jq -r '.artifacts[]|select(.name=="'$FILE'")')
+          ARTIFACT_JSON=$(api_get "$RUN_URL/artifacts" | tee $TMP_DIR/artifacts.json | jq -r '.artifacts[]|select(.name=="'$FILE'")')
           echo -e "$?\nARTIFACT_JSON=$ARTIFACT_JSON"
           # grab download url:
           DOWNLOAD_URL=$(jq -r '.archive_download_url' <<<$(echo $ARTIFACT_JSON))
@@ -102,12 +80,9 @@ jobs:
           echo -e "$?\nselection from $FILE:\n$REQUIREMENTS"
           # save selected requirements and branch to env
           echo -e "REQUIREMENTS<<EOF\n$REQUIREMENTS\nEOF" >> $GITHUB_ENV
-          echo "BR=$BR" >> $GITHUB_ENV
 
-      - name: get latest versions, check and trig. rebuild if needed
+      - name: Get latest versions, check and trig. rebuild if needed
         run: |
-          REPO="${{ matrix.oarepo-library }}"
-          BASE_URL="https://api.github.com/repos/$REPO"
           echo -e "branch: $BR\n"
           echo -e "REQUIREMENTS:\n$REQUIREMENTS\n"
           . ./scripts/functions.sh
@@ -143,7 +118,7 @@ jobs:
 
       - name: debug
         run: |
-          for F in tmp/*; do
+          for F in $TMP_DIR/*; do
             echo "=== $F ==="
             cat "$F"
             echo -e "=== ^^^ ===\n"
