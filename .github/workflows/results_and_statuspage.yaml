@@ -134,19 +134,19 @@ jobs:
             {
               echo "* ![$REPO - $STATUS]($BADGE_URL)\\"
               echo "[$REPO]($REPO_URL)\\"
-              echo "$STATUS: $(date '+%Y-%m-%d %H:%M:%S' -d "$RUNDATE")"
+              echo "$STATUS: $(TZ='Europe/Prague' date '+%Y-%m-%d %H:%M:%S %Z' -d "$RUNDATE")"
               if [[ "$STATUS" == "success" ]]; then
                 echo " $TAGLBL"
               else
                 echo "\\"
-                echo "last success: $(date '+%Y-%m-%d %H:%M:%S' -d "$SUCCDATE") $TAGLBL"
+                echo "last success: $(TZ='Europe/Prague' date '+%Y-%m-%d %H:%M:%S %Z' -d "$SUCCDATE") $TAGLBL"
               fi
               echo ""
             } >> ./pages/index.md
           done
           {
             echo "---"
-            echo "Generated: $(date '+%Y-%m-%d %H:%M:%S')"
+            echo "Generated: $(TZ='Europe/Prague' date '+%Y-%m-%d %H:%M:%S %Z')"
           } >> ./pages/index.md
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
