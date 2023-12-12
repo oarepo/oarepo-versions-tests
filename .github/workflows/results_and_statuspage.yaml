@@ -125,12 +125,13 @@ jobs:
         run: |
           ls -l $TMP_DIR
           for OLIB in $(echo $OAR_LIBS); do
-            echo ">$OLIB<"
             cat "$TMP_DIR/${OLIB//\//_}/${OLIB//\//_}.txt"
             read REPO STATUS RUNDATE SUCCDATE RWF TAG < "$TMP_DIR/${OLIB//\//_}/${OLIB//\//_}.txt"
             TAGLBL="${TAG:+tag }$TAG"
             REPO_URL="https://github.com/$OLIB"
             BADGE_URL="$REPO_URL/actions/workflows/${RWF//.github\/workflows\//}/badge.svg"
+            echo "REPO=$REPO STATUS=$STATUS RWF=$RWF TAG=$TAG"
+            echo "BADGE_URL=$BADGE_URL"
             {
               echo "* ![$REPO - $STATUS]($BADGE_URL)\\"
               echo "[$REPO]($REPO_URL)\\"
