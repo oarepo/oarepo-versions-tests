@@ -1,0 +1,158 @@
+name: Check results and make statuspage
+
+on:
+  workflow_call:
+    inputs:
+      oarepo:
+        description: OARepo version (11, 12, ...)
+        required: true
+        default: 11
+        type: string
+  workflow_dispatch:
+    inputs:
+      oarepo:
+        description: OARepo version (11, 12, ...)
+        required: true
+        default: 11
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write    
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  load-matrix-job:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.load-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set matrix
+        id: load-matrix
+        run: echo "matrix=$(jq -c --raw-input --slurp 'split("\n")|map(select(.!=""))' < ./libraries.txt)" >> $GITHUB_OUTPUT
+      - name: Debug
+        run: |
+          echo "matrix: >${{ steps.load-matrix.outputs.matrix }}<"
+          echo "json:"
+          jq '.' <<<'${{ steps.load-matrix.outputs.matrix }}'
+
+  process-matrix-job:
+    runs-on: ubuntu-latest
+    needs: load-matrix-job
+    strategy:
+      matrix:
+        library: ${{ fromJson(needs.load-matrix-job.outputs.matrix) }}
+        python-version: [ "3.10" ]
+    env:
+      OAREPO_VERSION: ${{ github.event.inputs.oarepo }}
+      TOK: ${{ secrets.OAREPO_BOT }}
+      BOT: oarepo-bot
+      TMP_DIR: /tmp/data
+      REPO: ${{ matrix.library }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Get default branch for ${{ matrix.library }}
+        run: |
+          BASE_URL="https://api.github.com/repos/$REPO"
+          . ./scripts/functions.sh
+          echo -e "\n$REPO\n($BASE_URL)\nget default branch:"
+          BR=$(api_call "$BASE_URL" | jq -r '.default_branch')
+          echo " ... branch $BR"
+          echo "BR=$BR" >> $GITHUB_ENV
+      - name: Get trigrun data for ${{ matrix.library }}
+        run: |
+          BASE_URL="https://api.github.com/repos/$REPO"
+          . ./scripts/functions.sh
+          echo "api_get_trigrun (for $REPO):"
+          read RUNDATE RUNCONCLUSION <<<$(api_get_trigrun "$BASE_URL")
+          sleep 1
+          read SUCCDATE SUCCCONCLUSION <<<$(api_get_trigrun "$BASE_URL" workflow_dispatch success)
+          echo "RUNCONCLUSION=$RUNCONCLUSION RUNDATE=$RUNDATE SUCCDATE=$SUCCDATE"
+          if [[ "$RUNCONCLUSION" != "success" && -n "$SUCCDATE" ]]; then
+            # last run failed and there is at least one succ.run
+            S_AGE=$(( $(date '+%s') - $(date '+%s' -d "$(echo $SUCCDATE)") ))
+            if [[ $S_AGE -lt 86400 ]]; then
+              # succ.run less then 1 day old
+              echo "notification trigger!"
+            fi
+          fi
+          mkdir -p ${{ env.TMP_DIR }}
+          FILE="${{ env.TMP_DIR }}/${REPO//\//_}.txt"
+          echo -e "$REPO\t$RUNCONCLUSION\t$RUNDATE\t$SUCCDATE" > "$FILE"
+          echo -e "FILE=$FILE\nARTIF_NAME=${REPO//\//_}" >> $GITHUB_ENV
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.ARTIF_NAME }}
+          path: ${{ env.FILE }}
+          retention-days: 1
+
+  process-outputs:
+    runs-on: ubuntu-latest
+    needs: process-matrix-job
+    env:
+      TMP_DIR: /tmp/data
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+      - name: Debug
+        run: |
+          OAR_LIBS=$(cat ./libraries.txt)
+          echo ">$OAR_LIBS<"
+          echo -e "OAR_LIBS<<EOF\n$OAR_LIBS\nEOF" >> $GITHUB_ENV
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          path: ${{ env.TMP_DIR }}
+      - name: Generate index page
+        run: |
+          ls -l $TMP_DIR
+          for OLIB in $(echo $OAR_LIBS); do
+            echo ">$OLIB<"
+            cat "$TMP_DIR/${OLIB//\//_}/${OLIB//\//_}.txt"
+            read REPO STATUS RUNDATE SUCCDATE < "$TMP_DIR/${OLIB//\//_}/${OLIB//\//_}.txt"
+            REPO_URL="https://github.com/$OLIB"
+            BADGE_URL="$REPO_URL/actions/workflows/manual.yaml/badge.svg"
+            {
+              echo "* [![$REPO - $STATUS]($BADGE_URL) $REPO]($REPO_URL)\\"
+              echo "$STATUS: $(date '+%Y-%m-%d %H:%M:%S' -d "$RUNDATE")"
+              if [[ "$STATUS" != "success" ]]; then
+                echo "\\"
+                echo "last success: $(date '+%Y-%m-%d %H:%M:%S' -d "$SUCCDATE")"
+              fi
+              echo ""
+            } >> ./pages/index.md
+          done
+          {
+            echo "---"
+            echo "Generated: $(date '+%Y-%m-%d %H:%M:%S')"
+          } >> ./pages/index.md
+      - name: Build with Jekyll
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./pages
+          destination: ./_site
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+
+  deploy-pages:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: process-outputs
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
