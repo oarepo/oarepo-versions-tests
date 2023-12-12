@@ -25,7 +25,7 @@ function api_get_trigrun(){
   local url=${1:?"api_call: url undefined"} ; shift
   local concl="${1:-}" ; shift
   local idx="${1:-0}" ; shift
-  local cond='(.event=="push" or .event=="workflow_dispatch") and (.referenced_workflows[0].ref|test("^refs/(tags|heads/'$BR')"))'
+  local cond='(.event=="push" or .event=="workflow_dispatch") and (.referenced_workflows[0]!=null) and (.referenced_workflows[0].ref|test("^refs/(tags|heads/'$BR')"))'
   local fullurl="$url/actions/runs?status=$concl"
   api_call "$fullurl" "GET" | jq -r "
     [
