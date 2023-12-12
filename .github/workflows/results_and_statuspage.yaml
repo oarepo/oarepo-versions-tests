@@ -73,10 +73,10 @@ jobs:
           BASE_URL="https://api.github.com/repos/$REPO"
           . ./scripts/functions.sh
           echo "api_get_trigrun (for $REPO):"
-          read RUNDATE RUNCONCLUSION <<<$(api_get_trigrun "$BASE_URL")
+          read RUNDATE RUNCONCLUSION RREF <<<$(api_get_trigrun "$BASE_URL")
           sleep 1
-          read SUCCDATE SUCCCONCLUSION <<<$(api_get_trigrun "$BASE_URL" workflow_dispatch success)
-          echo "RUNCONCLUSION=$RUNCONCLUSION RUNDATE=$RUNDATE SUCCDATE=$SUCCDATE"
+          read SUCCDATE SUCCCONCLUSION SREF <<<$(api_get_trigrun "$BASE_URL" success)
+          echo "RUNCONCLUSION=$RUNCONCLUSION RUNDATE=$RUNDATE SUCCDATE=$SUCCDATE SREF=$SREF"
           if [[ "$RUNCONCLUSION" != "success" && -n "$SUCCDATE" ]]; then
             # last run failed and there is at least one succ.run
             S_AGE=$(( $(date '+%s') - $(date '+%s' -d "$(echo $SUCCDATE)") ))
@@ -87,7 +87,13 @@ jobs:
           fi
           mkdir -p ${{ env.TMP_DIR }}
           FILE="${{ env.TMP_DIR }}/${REPO//\//_}.txt"
-          echo -e "$REPO\t$RUNCONCLUSION\t$RUNDATE\t$SUCCDATE" > "$FILE"
+          # try to extract tag-name
+          if [[ "$SREF" =~ ^refs/tags/([0-9.]+([a-z]*))$ ]]; then
+            TAG=${BASH_REMATCH[1]}
+          else
+            TAG=""
+          fi
+          echo -e "$REPO\t$RUNCONCLUSION\t$RUNDATE\t$SUCCDATE\tTAG" > "$FILE"
           echo -e "FILE=$FILE\nARTIF_NAME=${REPO//\//_}" >> $GITHUB_ENV
       - name: Upload artifact
         uses: actions/upload-artifact@v3
@@ -121,15 +127,17 @@ jobs:
           for OLIB in $(echo $OAR_LIBS); do
             echo ">$OLIB<"
             cat "$TMP_DIR/${OLIB//\//_}/${OLIB//\//_}.txt"
-            read REPO STATUS RUNDATE SUCCDATE < "$TMP_DIR/${OLIB//\//_}/${OLIB//\//_}.txt"
+            read REPO STATUS RUNDATE SUCCDATE TAG < "$TMP_DIR/${OLIB//\//_}/${OLIB//\//_}.txt"
             REPO_URL="https://github.com/$OLIB"
             BADGE_URL="$REPO_URL/actions/workflows/manual.yaml/badge.svg"
             {
               echo "* [![$REPO - $STATUS]($BADGE_URL) $REPO]($REPO_URL)\\"
               echo "$STATUS: $(date '+%Y-%m-%d %H:%M:%S' -d "$RUNDATE")"
-              if [[ "$STATUS" != "success" ]]; then
+              if [[ "$STATUS" == "success" ]]; then
+                echo " tag $TAG"
+              else
                 echo "\\"
-                echo "last success: $(date '+%Y-%m-%d %H:%M:%S' -d "$SUCCDATE")"
+                echo "last success: $(date '+%Y-%m-%d %H:%M:%S' -d "$SUCCDATE") tag $TAG"
               fi
               echo ""
             } >> ./pages/index.md
