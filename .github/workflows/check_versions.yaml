@@ -42,7 +42,7 @@ jobs:
     env:
       OAREPO_VERSION: ${{ github.event.inputs.oarepo }}
       TOK: ${{ secrets.OAREPO_BOT }}
-      TMP_DIR: /tmp/data
+      TMP_DIR: /tmp/check_versions_data
       REPO: ${{ matrix.oarepo-library }}
       BASE_URL: https://api.github.com/repos/${{ matrix.oarepo-library }}
     steps:
@@ -59,7 +59,7 @@ jobs:
 
       - name: Get requirements for ${{ matrix.oarepo-library }}
         run: |
-          FILE="requirements.txt"
+          REQFILE="requirements.txt"
           . ./scripts/functions.sh
           mkdir -p $TMP_DIR
           echo "REPO=$REPO:  (BASE_URL=$BASE_URL)"
@@ -67,7 +67,7 @@ jobs:
           read SUCCDATE SUCCCONCLUSION SREF SWF RUN_URL <<<$(api_get_trigrun "$BASE_URL" success)
           echo -e "$?\nRUN_URL=$RUN_URL"
           # download artifact list and find section with the wanted file:
-          ARTIFACT_JSON=$(api_get "$RUN_URL/artifacts" | tee $TMP_DIR/artifacts.json | jq -r '.artifacts[]|select(.name=="'$FILE'")')
+          ARTIFACT_JSON=$(api_get "$RUN_URL/artifacts" | jq -r '.artifacts[]|select(.name=="'$REQFILE'")')
           echo -e "$?\nARTIFACT_JSON=$ARTIFACT_JSON"
           # grab download url:
           DOWNLOAD_URL=$(jq -r '.archive_download_url' <<<$(echo $ARTIFACT_JSON))
@@ -77,9 +77,11 @@ jobs:
           echo -e "$?\nLOC=>$LOC<"
           # download, unzip and filter the file
           REQUIREMENTS=$(curl -s -XGET "$LOC" | zcat | sed -n '/^oarepo/p; /^nr/p;')
-          echo -e "$?\nselection from $FILE:\n$REQUIREMENTS"
+          echo -e "$?\nselection from $REQFILE:\n$REQUIREMENTS"
           # save selected requirements and branch to env
           echo -e "REQUIREMENTS<<EOF\n$REQUIREMENTS\nEOF" >> $GITHUB_ENV
+          OUTFILE="$TMP_DIR/${REPO//\//_}.txt"
+          echo -e "OUTFILE=$OUTFILE\nARTIF_NAME=${REPO//\//_}" >> $GITHUB_ENV
 
       - name: Get latest versions, check and trig. rebuild if needed
         run: |
@@ -107,19 +109,41 @@ jobs:
             else
               echo "Unsupported format ($REQ)"
             fi
-          done
+          done | tee -a $OUTFILE
           if [[ $REBUID_NEEDED ]]; then
             echo -e "\n-->calling rebuid $REPO (manual.yaml)":
             api_trig "$BASE_URL" "manual.yaml"
             echo "return status: $?"
           else
             echo -e "\n-->rebuild not necessary"
-          fi
+          fi | tee -a $OUTFILE
 
-      - name: debug
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.ARTIF_NAME }}
+          path: ${{ env.OUTFILE }}
+          retention-days: 1
+
+  debug-job:
+    runs-on: ubuntu-latest
+    needs: ver-check
+    env:
+      TMP_DIR: /tmp/check_versions_data
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          path: ${{ env.TMP_DIR }}
+
+      - name: Debug
         run: |
-          for F in $TMP_DIR/*; do
-            echo "=== $F ==="
-            cat "$F"
-            echo -e "=== ^^^ ===\n"
+          ls -l $TMP_DIR
+          for OLIB in $(cat ./libraries.txt); do
+            echo "=== $OLIB ==="
+            cat "$TMP_DIR/${OLIB//\//_}/${OLIB//\//_}.txt"
+            echo -e "=== ^^^ ===\n\n"
           done

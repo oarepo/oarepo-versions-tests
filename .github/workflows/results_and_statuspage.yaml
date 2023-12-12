@@ -86,27 +86,27 @@ jobs:
             fi
           fi
           mkdir -p ${{ env.TMP_DIR }}
-          FILE="${{ env.TMP_DIR }}/${REPO//\//_}.txt"
+          OUTFILE="${{ env.TMP_DIR }}/${REPO//\//_}.txt"
           # try to extract tag-name
           if [[ "$SREF" =~ ^refs/tags/([0-9.]+([a-z]*))$ ]]; then
             TAG=${BASH_REMATCH[1]}
           else
             TAG=""
           fi
-          echo -e "$REPO\t$RUNCONCLUSION\t$RUNDATE\t$SUCCDATE\t$RWF\t$TAG" > "$FILE"
-          echo -e "FILE=$FILE\nARTIF_NAME=${REPO//\//_}" >> $GITHUB_ENV
+          echo -e "$REPO\t$RUNCONCLUSION\t$RUNDATE\t$SUCCDATE\t$RWF\t$TAG" > "$OUTFILE"
+          echo -e "OUTFILE=$OUTFILE\nARTIF_NAME=${REPO//\//_}" >> $GITHUB_ENV
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: ${{ env.ARTIF_NAME }}
-          path: ${{ env.FILE }}
+          path: ${{ env.OUTFILE }}
           retention-days: 1
 
   process-outputs:
     runs-on: ubuntu-latest
     needs: process-matrix-job
     env:
-      TMP_DIR: /tmp/data
+      TMP_DIR: /tmp/results_and_statuspage_data
     steps:
       - name: Checkout
         uses: actions/checkout@v3
