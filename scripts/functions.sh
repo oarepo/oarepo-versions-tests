@@ -1,7 +1,7 @@
 
 function api_call(){
   local url="${1:?api_call: url undefined}" ; shift
-  local method="${1:-GET}"
+  local method="${1:-GET}" ; shift
   local data="{${BR:+ \"ref\":\"$BR\"}}"
   curl -s -X$method -H "Accept: application/vnd.github.v3+json" ${TOK:+ -H "authorization: Bearer $TOK"} -d "$data" "$url" $@
 }
