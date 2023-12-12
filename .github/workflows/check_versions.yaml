@@ -89,6 +89,7 @@ jobs:
           echo -e "REQUIREMENTS:\n$REQUIREMENTS\n"
           . ./scripts/functions.sh
           REGEX="^([-a-z0-9]+)[<>=]+(([0-9]+)\..*)$"
+          {
           REBUID_NEEDED=
           for REQ in $REQUIREMENTS; do
             if [[ "$REQ" =~ $REGEX ]]; then
@@ -109,14 +110,15 @@ jobs:
             else
               echo "Unsupported format ($REQ)"
             fi
-          done | tee -a $OUTFILE
+          done
           if [[ $REBUID_NEEDED ]]; then
             echo -e "\n-->calling rebuid $REPO (manual.yaml)":
             api_trig "$BASE_URL" "manual.yaml"
             echo "return status: $?"
           else
             echo -e "\n-->rebuild not necessary"
-          fi | tee -a $OUTFILE
+          fi
+          } | tee -a $OUTFILE
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
