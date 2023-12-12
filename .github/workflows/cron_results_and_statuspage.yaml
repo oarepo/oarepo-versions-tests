@@ -1,0 +1,24 @@
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2022 CESNET.
+#
+# oarepo-versions-tests is free software; you can redistribute it and/or modify it
+# under the terms of the MIT License; see LICENSE file for more details.
+
+name: Cron wf call results_and_statuspage.yaml
+on:
+  schedule:
+    # every day at 7:19 GMT
+    - cron: '19 7 * * *'
+    # every sat. at 6:39 GMT
+    #- cron: '39 6 * * 6'
+    # debug run
+    - cron: '10 19 * * *'
+  workflow_dispatch:
+
+jobs:
+  cron-call:
+    uses: ./.github/workflows/results_and_statuspage.yaml
+    secrets: inherit
+    with:
+      oarepo: 11
