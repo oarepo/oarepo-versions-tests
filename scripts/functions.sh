@@ -33,7 +33,7 @@ function api_get_trigrun(){
       | select($cond)
     ]
     | sort_by(.run_started_at) | reverse [$idx]
-    | [.run_started_at,.conclusion,.referenced_workflows[0].ref]
+    | [.run_started_at,.conclusion,.referenced_workflows[0].ref,.path]
     |@tsv
   "
 }
