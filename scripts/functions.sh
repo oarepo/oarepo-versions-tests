@@ -1,10 +1,9 @@
 
 function api_call(){
-  local url="$1"
-  shift
-  local method="$1"
-  shift
-  curl -s -X$method -H "Accept: application/vnd.github.v3+json" -H "authorization: Bearer $TOK" -d '{"ref":"'$BR'"}' "$url" $@
+  local url="${1:?api_call: url undefined}" ; shift
+  local method="${1:-GET}"
+  local data="{${BR:+ \"ref\":\"$BR\"}}"
+  curl -s -X$method -H "Accept: application/vnd.github.v3+json" ${TOK:+ -H "authorization: Bearer $TOK"} -d "$data" "$url" $@
 }
 function api_get(){
   local url="$1"
@@ -20,6 +19,25 @@ function api_trig(){
   local url="$1"
   local wflow="$2"
   api_post "$url/actions/workflows/$wflow/dispatches"
+}
+
+function api_get_trigrun(){
+  local url=${1:?"api_call: url undefined"} ; shift
+  local event="${1:-workflow_dispatch}" ; shift
+  local concl="$1" ; shift
+  local idx="${1:-0}" ; shift
+  local status="${concl:+"&status=$concl"}"
+  local cond='.path==".github/workflows/manual.yaml"'
+  local fullurl="$url/actions/runs?branch=$BR&actor=$BOT&event=$event$status"
+  api_call "$fullurl" "GET" | jq -r "
+    [
+      .workflow_runs[]
+      | select($cond)
+    ]
+    | sort_by(.run_started_at) | reverse [$idx]
+    | [.run_started_at,.conclusion]
+    |@tsv
+  "
 }
 
 function get_latest_pypi_version(){

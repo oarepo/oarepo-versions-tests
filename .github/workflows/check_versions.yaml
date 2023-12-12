@@ -80,10 +80,10 @@ jobs:
           echo " ... branch $BR"
           echo "REPO=$REPO:  (BASE_URL=$BASE_URL)"
           # download list of actions runs, filter it and grab url:
-          RUN_URL=$(api_get "$BASE_URL/actions/runs" | tee tmp/runs.json | jq -r '
+          RUN_URL=$(api_get "$BASE_URL/actions/runs?branch=$BR&status=success" | tee tmp/runs.json | jq -r '
             [
               .workflow_runs[]
-              | select(.conclusion=="success" and (.event=="push" or .event=="workflow_dispatch") and .head_branch=="'$BR'")
+              | select(.event=="push" or .event=="workflow_dispatch")
             ][0]
             |.url
           ')
