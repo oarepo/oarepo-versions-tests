@@ -55,7 +55,7 @@ jobs:
       OAREPO_VERSION: ${{ github.event.inputs.oarepo }}
       TOK: ${{ secrets.OAREPO_BOT }}
       BOT: oarepo-bot
-      TMP_DIR: /tmp/data
+      TMP_DIR: /tmp/results_and_statuspage_data
       REPO: ${{ matrix.oarepo-library }}
       BASE_URL: https://api.github.com/repos/${{ matrix.oarepo-library }}
     steps:
@@ -85,16 +85,17 @@ jobs:
               #mm_msg "test $(date '+%y%m%d-%H%M%S')" ${{ secrets.MM_CHANNEL }}
             fi
           fi
-          mkdir -p ${{ env.TMP_DIR }}
-          OUTFILE="${{ env.TMP_DIR }}/${REPO//\//_}.txt"
           # try to extract tag-name
           if [[ "$SREF" =~ ^refs/tags/([0-9.]+([a-z]*))$ ]]; then
             TAG=${BASH_REMATCH[1]}
           else
             TAG=""
           fi
+          mkdir -p $TMP_DIR
+          ARTIF_NAME="rs_${REPO//\//_}"
+          OUTFILE="$TMP_DIR/$ARTIF_NAME.txt"
           echo -e "$REPO\t$RUNCONCLUSION\t$RUNDATE\t$SUCCDATE\t$RWF\t$TAG" > "$OUTFILE"
-          echo -e "OUTFILE=$OUTFILE\nARTIF_NAME=${REPO//\//_}" >> $GITHUB_ENV
+          echo -e "OUTFILE=$OUTFILE\nARTIF_NAME=$ARTIF_NAME" >> $GITHUB_ENV
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
@@ -124,11 +125,13 @@ jobs:
       - name: Generate index page
         run: |
           ls -l $TMP_DIR
-          for OLIB in $(echo $OAR_LIBS); do
-            cat "$TMP_DIR/${OLIB//\//_}/${OLIB//\//_}.txt"
-            read REPO STATUS RUNDATE SUCCDATE RWF TAG < "$TMP_DIR/${OLIB//\//_}/${OLIB//\//_}.txt"
+          for REPO in $(echo $OAR_LIBS); do
+            ARTIF_NAME="rs_${REPO//\//_}"
+            FILE="$TMP_DIR/$ARTIF_NAME/$ARTIF_NAME.txt"
+            cat "$FILE"
+            read REPO2 STATUS RUNDATE SUCCDATE RWF TAG < "$FILE"
             TAGLBL="${TAG:+tag }$TAG"
-            REPO_URL="https://github.com/$OLIB"
+            REPO_URL="https://github.com/$REPO"
             BADGE_URL="$REPO_URL/actions/workflows/${RWF//.github\/workflows\//}/badge.svg"
             echo "REPO=$REPO STATUS=$STATUS RWF=$RWF TAG=$TAG"
             echo "BADGE_URL=$BADGE_URL"
