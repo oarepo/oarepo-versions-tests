@@ -82,7 +82,6 @@ jobs:
             if [[ $S_AGE -lt 86400 ]]; then
               # succ.run less then 1 day old
               echo "notification trigger ?"
-              #mm_msg "[oarepo-versions-tests] failed build: $REPO" ${{ secrets.MM_CHANNEL }}
             fi
           fi
           # try to extract tag-name
@@ -168,7 +167,6 @@ jobs:
             STAT+=" / <span style=\"color:red\">failure:$FAIL</span>"
             NOTIF_MSG="[oarepo-versions-tests](https://oarepo.github.io/oarepo-versions-tests/)\nfailed builds:\n$(IFS=$'\n' ; echo "${FAILS[*]}")"
             echo "NOTIF_MSG=$NOTIF_MSG"
-            #mm_msg "$NOTIF_MSG" ${{ secrets.MM_CHANNEL }}
           fi
           sed -i "s/#STAT/${STAT//\//\\\/}/" ./pages/index.md
           {
@@ -176,13 +174,6 @@ jobs:
             echo "Generated: $(TZ='Europe/Prague' date '+%Y-%m-%d %H:%M:%S %Z')"
           } >> ./pages/index.md
           echo -e "notif-msg<<EOF\n$NOTIF_MSG\nEOF" >> $GITHUB_OUTPUT
-
-      - name: Debug MM
-        # disabled
-        if: false
-        run: |
-          . ./scripts/functions.sh
-          mm_msg "test $(date '+%y%m%d-%H%M%S')" ${{ secrets.MM_CHANNEL }}
 
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
@@ -206,7 +197,7 @@ jobs:
           . ./scripts/functions.sh
           sleep 10
           echo "NOTIF_MSG=$NOTIF_MSG"
-          #mm_msg "$NOTIF_MSG" ${{ secrets.MM_CHANNEL }}
+          mm_msg "$NOTIF_MSG" ${{ secrets.MM_CHANNEL }}
         if: env.NOTIF_MSG != ''
 
   deploy-pages:
