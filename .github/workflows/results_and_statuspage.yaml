@@ -166,6 +166,8 @@ jobs:
           } >> ./pages/index.md
 
       - name: Debug MM
+        # disabled
+        if: false
         run: |
           . ./scripts/functions.sh
           mm_msg "test $(date '+%y%m%d-%H%M%S')" ${{ secrets.MM_CHANNEL }}
