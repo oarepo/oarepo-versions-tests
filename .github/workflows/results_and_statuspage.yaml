@@ -183,23 +183,6 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
 
-  send-notification:
-    runs-on: ubuntu-latest
-    needs: process-outputs
-    env:
-      NOTIF_MSG: ${{ needs.process-outputs.outputs.notif-msg }}
-      MM_OAREPO_WH: ${{ secrets.MM_OAREPO_WH }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Send notification
-        run: |
-          . ./scripts/functions.sh
-          sleep 10
-          echo "NOTIF_MSG=$NOTIF_MSG"
-          mm_msg "$NOTIF_MSG" ${{ secrets.MM_CHANNEL }}
-        if: env.NOTIF_MSG != ''
-
   deploy-pages:
     environment:
       name: github-pages
@@ -210,3 +193,19 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v2
+
+  send-notification:
+    runs-on: ubuntu-latest
+    needs: [ process-outputs, deploy-pages ]
+    if: needs.process-outputs.outputs.notif-msg != ''
+    env:
+      NOTIF_MSG: ${{ needs.process-outputs.outputs.notif-msg }}
+      MM_OAREPO_WH: ${{ secrets.MM_OAREPO_WH }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Send notification
+        run: |
+          . ./scripts/functions.sh
+          echo "NOTIF_MSG=$NOTIF_MSG"
+          mm_msg "$NOTIF_MSG" ${{ secrets.MM_CHANNEL }}
