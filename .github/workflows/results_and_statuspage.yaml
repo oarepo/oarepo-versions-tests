@@ -109,6 +109,8 @@ jobs:
     env:
       TMP_DIR: /tmp/results_and_statuspage_data
       MM_OAREPO_WH: ${{ secrets.MM_OAREPO_WH }}
+    outputs:
+      notif-msg: ${{ steps.generate-index.outputs.notif-msg }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -128,6 +130,7 @@ jobs:
           path: ${{ env.TMP_DIR }}
 
       - name: Generate index page
+        id: generate-index
         run: |
           . ./scripts/functions.sh
           ls -l $TMP_DIR
@@ -160,17 +163,19 @@ jobs:
             } >> ./pages/index.md
           done
           STAT="<span style=\"color:green\">success:$SUCC</span>"
+          NOTIF_MSG=""
           if [[ $FAIL -gt 0 ]]; then
             STAT+=" / <span style=\"color:red\">failure:$FAIL</span>"
-            MSG="[oarepo-versions-tests](https://oarepo.github.io/oarepo-versions-tests/)\nfailed builds:\n$(IFS=$'\n' ; echo "${FAILS[*]}")"
-            echo "MSG=$MSG"
-            mm_msg "$MSG" ${{ secrets.MM_CHANNEL }}
+            NOTIF_MSG="[oarepo-versions-tests](https://oarepo.github.io/oarepo-versions-tests/)\nfailed builds:\n$(IFS=$'\n' ; echo "${FAILS[*]}")"
+            echo "NOTIF_MSG=$NOTIF_MSG"
+            #mm_msg "$NOTIF_MSG" ${{ secrets.MM_CHANNEL }}
           fi
           sed -i "s/#STAT/${STAT//\//\\\/}/" ./pages/index.md
           {
             echo "---"
             echo "Generated: $(TZ='Europe/Prague' date '+%Y-%m-%d %H:%M:%S %Z')"
           } >> ./pages/index.md
+          echo -e "notif-msg<<EOF\n$NOTIF_MSG\nEOF" >> $GITHUB_OUTPUT
 
       - name: Debug MM
         # disabled
@@ -186,6 +191,23 @@ jobs:
           destination: ./_site
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
+
+  send-notification:
+    runs-on: ubuntu-latest
+    needs: process-outputs
+    env:
+      NOTIF_MSG: ${{ needs.process-outputs.outputs.notif-msg }}
+      MM_OAREPO_WH: ${{ secrets.MM_OAREPO_WH }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Send notification
+        run: |
+          . ./scripts/functions.sh
+          sleep 10
+          echo "NOTIF_MSG=$NOTIF_MSG"
+          #mm_msg "$NOTIF_MSG" ${{ secrets.MM_CHANNEL }}
+        if: env.NOTIF_MSG != ""
 
   deploy-pages:
     environment:
