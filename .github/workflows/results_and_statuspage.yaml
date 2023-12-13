@@ -154,7 +154,7 @@ jobs:
                 echo "\\"
                 echo "last success: $(TZ='Europe/Prague' date '+%Y-%m-%d %H:%M:%S %Z' -d "$SUCCDATE") $TAGLBL"
                 ((++FAIL))
-                FAILS+=( "$REPO" )
+                FAILS+=( "* [$REPO]($REPO_URL)" )
               fi
               echo ""
             } >> ./pages/index.md
@@ -162,7 +162,7 @@ jobs:
           STAT="<span style=\"color:green\">success:$SUCC</span>"
           if [[ $FAIL -gt 0 ]]; then
             STAT+=" / <span style=\"color:red\">failure:$FAIL</span>"
-            MSG="[oarepo-versions-tests] failed builds:\n$(IFS=$'\n' ; echo "${FAILS[*]}")"
+            MSG="[oarepo-versions-tests](https://oarepo.github.io/oarepo-versions-tests/)\nfailed builds:\n$(IFS=$'\n' ; echo "${FAILS[*]}")"
             echo "MSG=$MSG"
             mm_msg "$MSG" ${{ secrets.MM_CHANNEL }}
           fi
