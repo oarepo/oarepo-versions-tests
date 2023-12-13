@@ -1,4 +1,4 @@
-name: Dispatch
+name: Test manual wf dispatch
 
 on:
   workflow_dispatch:

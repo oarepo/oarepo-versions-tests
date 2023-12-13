@@ -125,6 +125,7 @@ jobs:
       - name: Generate index page
         run: |
           ls -l $TMP_DIR
+          OK=0 ERR=0
           for REPO in $(echo $OAR_LIBS); do
             ARTIF_NAME="rs_${REPO//\//_}"
             FILE="$TMP_DIR/$ARTIF_NAME/$ARTIF_NAME.txt"
@@ -141,13 +142,18 @@ jobs:
               echo "$STATUS: $(TZ='Europe/Prague' date '+%Y-%m-%d %H:%M:%S %Z' -d "$RUNDATE")"
               if [[ "$STATUS" == "success" ]]; then
                 echo " $TAGLBL"
+                ((OK++))
               else
                 echo "\\"
                 echo "last success: $(TZ='Europe/Prague' date '+%Y-%m-%d %H:%M:%S %Z' -d "$SUCCDATE") $TAGLBL"
+                ((ERR++))
               fi
               echo ""
             } >> ./pages/index.md
           done
+          MSG="<span style=\"color:green\">success:$OK</span>"
+          if [[ $ERR -gt 0 ]]; then MSG+=" / <span style=\"color:red\">failure:$ERR</span>"; fi
+          sed -i "s/#MSG/${MSG//\//\\\/}/" ./pages/index.md
           {
             echo "---"
             echo "Generated: $(TZ='Europe/Prague' date '+%Y-%m-%d %H:%M:%S %Z')"
