@@ -58,6 +58,7 @@ jobs:
       TMP_DIR: /tmp/results_and_statuspage_data
       REPO: ${{ matrix.oarepo-library }}
       BASE_URL: https://api.github.com/repos/${{ matrix.oarepo-library }}
+      MM_OAREPO_WH: ${{ secrets.MM_OAREPO_WH }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -82,7 +83,7 @@ jobs:
             if [[ $S_AGE -lt 86400 ]]; then
               # succ.run less then 1 day old
               echo "notification trigger!"
-              #mm_msg "test $(date '+%y%m%d-%H%M%S')" ${{ secrets.MM_CHANNEL }}
+              #mm_msg "[oarepo-versions-tests] failed build: $REPO" ${{ secrets.MM_CHANNEL }}
             fi
           fi
           # try to extract tag-name
@@ -108,6 +109,7 @@ jobs:
     needs: process-matrix-job
     env:
       TMP_DIR: /tmp/results_and_statuspage_data
+      MM_OAREPO_WH: ${{ secrets.MM_OAREPO_WH }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
