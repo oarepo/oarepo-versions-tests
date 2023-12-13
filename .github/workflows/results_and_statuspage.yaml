@@ -207,7 +207,7 @@ jobs:
           sleep 10
           echo "NOTIF_MSG=$NOTIF_MSG"
           #mm_msg "$NOTIF_MSG" ${{ secrets.MM_CHANNEL }}
-        if: env.NOTIF_MSG != ""
+        if: env.NOTIF_MSG != ''
 
   deploy-pages:
     environment:
