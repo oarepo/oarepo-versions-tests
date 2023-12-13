@@ -58,7 +58,6 @@ jobs:
       TMP_DIR: /tmp/results_and_statuspage_data
       REPO: ${{ matrix.oarepo-library }}
       BASE_URL: https://api.github.com/repos/${{ matrix.oarepo-library }}
-      MM_OAREPO_WH: ${{ secrets.MM_OAREPO_WH }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -82,7 +81,7 @@ jobs:
             S_AGE=$(( $(date '+%s') - $(date '+%s' -d "$(echo $SUCCDATE)") ))
             if [[ $S_AGE -lt 86400 ]]; then
               # succ.run less then 1 day old
-              echo "notification trigger!"
+              echo "notification trigger ?"
               #mm_msg "[oarepo-versions-tests] failed build: $REPO" ${{ secrets.MM_CHANNEL }}
             fi
           fi
@@ -130,8 +129,10 @@ jobs:
 
       - name: Generate index page
         run: |
+          . ./scripts/functions.sh
           ls -l $TMP_DIR
           SUCC=0 FAIL=0
+          declare -a FAILS
           for REPO in $(echo $OAR_LIBS); do
             ARTIF_NAME="rs_${REPO//\//_}"
             FILE="$TMP_DIR/$ARTIF_NAME/$ARTIF_NAME.txt"
@@ -153,13 +154,19 @@ jobs:
                 echo "\\"
                 echo "last success: $(TZ='Europe/Prague' date '+%Y-%m-%d %H:%M:%S %Z' -d "$SUCCDATE") $TAGLBL"
                 ((++FAIL))
+                FAILS+=( "$REPO" )
               fi
               echo ""
             } >> ./pages/index.md
           done
-          MSG="<span style=\"color:green\">success:$SUCC</span>"
-          if [[ $FAIL -gt 0 ]]; then MSG+=" / <span style=\"color:red\">failure:$FAIL</span>"; fi
-          sed -i "s/#MSG/${MSG//\//\\\/}/" ./pages/index.md
+          STAT="<span style=\"color:green\">success:$SUCC</span>"
+          if [[ $FAIL -gt 0 ]]; then
+            STAT+=" / <span style=\"color:red\">failure:$FAIL</span>"
+            MSG="[oarepo-versions-tests] failed builds:\n$(IFS=$'\n' ; echo "${FAILS[*]}")"
+            echo "MSG=$MSG"
+            mm_msg "$MSG" ${{ secrets.MM_CHANNEL }}
+          fi
+          sed -i "s/#STAT/${STAT//\//\\\/}/" ./pages/index.md
           {
             echo "---"
             echo "Generated: $(TZ='Europe/Prague' date '+%Y-%m-%d %H:%M:%S %Z')"
