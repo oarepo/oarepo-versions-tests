@@ -142,18 +142,17 @@ jobs:
               echo "$STATUS: $(TZ='Europe/Prague' date '+%Y-%m-%d %H:%M:%S %Z' -d "$RUNDATE")"
               if [[ "$STATUS" == "success" ]]; then
                 echo " $TAGLBL"
-                ((SUCC++))
+                ((++SUCC))
               else
                 echo "\\"
                 echo "last success: $(TZ='Europe/Prague' date '+%Y-%m-%d %H:%M:%S %Z' -d "$SUCCDATE") $TAGLBL"
-                ((FAIL++))
+                ((++FAIL))
               fi
               echo ""
             } >> ./pages/index.md
           done
           MSG="<span style=\"color:green\">success:$SUCC</span>"
           if [[ $FAIL -gt 0 ]]; then MSG+=" / <span style=\"color:red\">failure:$FAIL</span>"; fi
-          which sed
           sed -i "s/#MSG/${MSG//\//\\\/}/" ./pages/index.md
           {
             echo "---"
