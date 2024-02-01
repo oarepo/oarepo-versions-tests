@@ -165,7 +165,7 @@ jobs:
           NOTIF_MSG=""
           if [[ $FAIL -gt 0 ]]; then
             STAT+=" / <span style=\"color:red\">failure:$FAIL</span>"
-            NOTIF_MSG="[oarepo-versions-tests](https://oarepo.github.io/oarepo-versions-tests/)\nfailed builds:\n$(IFS=$'\n' ; echo "${FAILS[*]}")"
+            NOTIF_MSG="[Dashboard oarepo-versions-tests](https://oarepo.github.io/oarepo-versions-tests/)\nfailed builds:\n$(IFS=$'\n' ; echo "${FAILS[*]}")"
             echo "NOTIF_MSG=$NOTIF_MSG"
           fi
           sed -i "s/#STAT/${STAT//\//\\\/}/" ./pages/index.md
