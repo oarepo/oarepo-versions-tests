@@ -1,0 +1,27 @@
+name: Test notification
+
+on:
+  workflow_dispatch:
+    inputs:
+      notif-msg:
+        required: false
+        type: string
+        default: test msg
+
+jobs:
+  send-notification:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.notif-msg != ''
+    # ENABLED
+    #if: false
+    env:
+      NOTIF_MSG: ${{ github.event.inputs.notif-msg }}
+      MM_OAREPO_WH: ${{ secrets.MM_OAREPO_WH }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Send notification
+        run: |
+          . ./scripts/functions.sh
+          echo "NOTIF_MSG=$NOTIF_MSG"
+          mm_msg "$NOTIF_MSG" ${{ secrets.MM_CHANNEL }}
