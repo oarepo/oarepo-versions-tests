@@ -1,6 +1,7 @@
 oarepo/oarepo-runtime
 oarepo/oarepo-vocabularies
 oarepo/oarepo-upload-cli
+oarepo/oarepo-requests
 oarepo/oarepo-model-builder
 oarepo/oarepo-model-builder-files
 oarepo/oarepo-model-builder-vocabularies
