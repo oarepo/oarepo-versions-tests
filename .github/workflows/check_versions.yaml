@@ -22,7 +22,7 @@ jobs:
       matrix: ${{ steps.load-matrix.outputs.matrix }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Set matrix
         id: load-matrix
         run: echo "matrix=$(jq -c --raw-input --slurp 'split("\n")|map(select(.!=""))' < ./libraries.txt)" >> $GITHUB_OUTPUT
@@ -47,7 +47,7 @@ jobs:
       BASE_URL: https://api.github.com/repos/${{ matrix.oarepo-library }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Get default branch for ${{ matrix.oarepo-library }}
         run: |
@@ -121,7 +121,7 @@ jobs:
           } | tee -a $OUTFILE
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.ARTIF_NAME }}
           path: ${{ env.OUTFILE }}
@@ -134,10 +134,10 @@ jobs:
       TMP_DIR: /tmp/check_versions_data
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: ${{ env.TMP_DIR }}
 

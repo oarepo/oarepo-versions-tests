@@ -29,9 +29,9 @@ jobs:
     outputs:
       requirements: ${{ steps.step1.outputs.requirements }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: get requirements for ${{ github.event.inputs.repo-name }}

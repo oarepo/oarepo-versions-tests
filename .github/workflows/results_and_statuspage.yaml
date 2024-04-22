@@ -34,7 +34,7 @@ jobs:
       matrix: ${{ steps.load-matrix.outputs.matrix }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Set matrix
         id: load-matrix
         run: echo "matrix=$(jq -c --raw-input --slurp 'split("\n")|map(select(.!=""))' < ./libraries.txt)" >> $GITHUB_OUTPUT
@@ -60,7 +60,7 @@ jobs:
       BASE_URL: https://api.github.com/repos/${{ matrix.oarepo-library }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Get default branch for ${{ matrix.oarepo-library }}
         run: |
           . ./scripts/functions.sh
@@ -96,7 +96,7 @@ jobs:
           echo -e "$REPO\t$RUNCONCLUSION\t$RUNDATE\t$SUCCDATE\t$RWF\t$TAG" > "$OUTFILE"
           echo -e "OUTFILE=$OUTFILE\nARTIF_NAME=$ARTIF_NAME" >> $GITHUB_ENV
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.ARTIF_NAME }}
           path: ${{ env.OUTFILE }}
@@ -112,10 +112,10 @@ jobs:
       notif-msg: ${{ steps.generate-index.outputs.notif-msg }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Pages
-        uses: actions/configure-pages@v3
+        uses: actions/configure-pages@v5
 
       - name: Debug
         run: |
@@ -124,7 +124,7 @@ jobs:
           echo -e "OAR_LIBS<<EOF\n$OAR_LIBS\nEOF" >> $GITHUB_ENV
 
       - name: Download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: ${{ env.TMP_DIR }}
 
@@ -181,7 +181,7 @@ jobs:
           source: ./pages
           destination: ./_site
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v3
 
   deploy-pages:
     environment:
@@ -192,7 +192,7 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4
 
   send-notification:
     runs-on: ubuntu-latest
@@ -205,7 +205,7 @@ jobs:
       MM_OAREPO_WH: ${{ secrets.MM_OAREPO_WH }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Send notification
         run: |
           . ./scripts/functions.sh
