@@ -2,7 +2,11 @@
 function api_call(){
   local url="${1:?api_call: url undefined}" ; shift
   local method="${1:-GET}" ; shift
-  local data="{${BR:+ \"ref\":\"$BR\"}}"
+  local inputs="${1:+\"inputs\":$1}" ; shift
+  local data="${BR:+\"ref\":\"$BR\"}"
+  local sep="${data:+,}"
+  data="$data${inputs:+$sep$inputs}"
+  data="{$data}"
   curl -s -X$method -H "Accept: application/vnd.github.v3+json" ${TOK:+ -H "authorization: Bearer $TOK"} -d "$data" "$url" $@
 }
 function api_get(){
@@ -16,9 +20,9 @@ function api_post(){
   api_call "$url" "POST" $@
 }
 function api_trig(){
-  local url="$1"
-  local wflow="$2"
-  api_post "$url/actions/workflows/$wflow/dispatches"
+  local url="$1" ; shift
+  local wflow="$1" ; shift
+  api_post "$url/actions/workflows/$wflow/dispatches" $@
 }
 
 function api_get_trigrun(){

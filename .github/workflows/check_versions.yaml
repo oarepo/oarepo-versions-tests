@@ -113,7 +113,7 @@ jobs:
           done
           if [[ $REBUID_NEEDED ]]; then
             echo -e "\n-->calling rebuid $REPO (manual.yaml)":
-            api_trig "$BASE_URL" "manual.yaml"
+            api_trig "$BASE_URL" "manual.yaml" "{\"oarepo\":\"$OAREPO_VERSION\"}"
             echo "return status: $?"
           else
             echo -e "\n-->rebuild not necessary"
