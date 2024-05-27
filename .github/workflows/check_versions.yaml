@@ -40,7 +40,7 @@ jobs:
         oarepo-library: ${{ fromJson(needs.load-matrix-job.outputs.matrix) }}
         python-version: [ "3.10" ]
     env:
-      OAREPO_VERSION: ${{ github.event.inputs.oarepo }}
+      OAREPO_VERSION: ${{ inputs.oarepo }}
       TOK: ${{ secrets.OAREPO_BOT }}
       TMP_DIR: /tmp/check_versions_data
       REPO: ${{ matrix.oarepo-library }}
