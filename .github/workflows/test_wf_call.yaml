@@ -13,7 +13,7 @@ on:
         description: OARepo version (11, 12, ...)
         required: true
         type: string
-        default: 11
+        default: 12
 
 jobs:
   calljob:
