@@ -21,4 +21,4 @@ jobs:
     uses: ./.github/workflows/check_versions.yaml
     secrets: inherit
     with:
-      oarepo: 11
+      oarepo: 12
