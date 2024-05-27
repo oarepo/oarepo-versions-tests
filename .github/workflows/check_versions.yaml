@@ -6,14 +6,14 @@ on:
       oarepo:
         description: OARepo version (11, 12, ...)
         required: true
-        default: 11
+        default: 12
         type: string
   workflow_dispatch:
     inputs:
       oarepo:
         description: OARepo version (11, 12, ...)
         required: true
-        default: 11
+        default: 12
 
 jobs:
   load-matrix-job:
