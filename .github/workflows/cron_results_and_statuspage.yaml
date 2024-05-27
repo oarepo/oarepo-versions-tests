@@ -21,4 +21,4 @@ jobs:
     uses: ./.github/workflows/results_and_statuspage.yaml
     secrets: inherit
     with:
-      oarepo: 11
+      oarepo: 12
