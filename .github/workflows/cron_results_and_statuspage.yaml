@@ -8,8 +8,8 @@
 name: Cron wf call results_and_statuspage.yaml
 on:
   schedule:
-    # every day at 7:19 GMT
-    - cron: '19 7 * * *'
+    # every day at 6:29 GMT
+    - cron: '29 6 * * *'
     # every sat. at 6:39 GMT
     #- cron: '39 6 * * 6'
     # debug run

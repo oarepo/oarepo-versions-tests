@@ -8,8 +8,8 @@
 name: Cron wf call check_versions.yaml
 on:
   schedule:
-    # every day at 6:39 GMT
-    - cron: '39 6 * * *'
+    # every day at 4:39 GMT
+    - cron: '39 4 * * *'
     # every sat. at 6:39 GMT
     #- cron: '39 6 * * 6'
     # debug run
