@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Set matrix
         id: load-matrix
-        run: echo "matrix=$(jq -c --raw-input --slurp 'split("\n")|map(select(.!=""))' < ./libraries.txt)" >> $GITHUB_OUTPUT
+        run: echo "matrix=$(grep -v '^#' ./libraries.txt | jq -c --raw-input --slurp 'split("\n")|map(select(.!=""))')" >> $GITHUB_OUTPUT
       - name: Debug
         run: |
           echo "matrix: >${{ steps.load-matrix.outputs.matrix }}<"
@@ -144,7 +144,7 @@ jobs:
       - name: Debug
         run: |
           ls -l $TMP_DIR
-          for OLIB in $(cat ./libraries.txt); do
+          for OLIB in $(grep -v '^#' ./libraries.txt); do
             echo "=== $OLIB ==="
             cat "$TMP_DIR/${OLIB//\//_}/${OLIB//\//_}.txt"
             echo -e "=== ^^^ ===\n\n"
