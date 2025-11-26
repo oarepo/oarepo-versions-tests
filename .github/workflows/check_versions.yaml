@@ -59,7 +59,6 @@ jobs:
 
       - name: Get requirements for ${{ matrix.oarepo-library }}
         run: |
-          REQFILE="requirements.txt"
           . ./scripts/functions.sh
           mkdir -p $TMP_DIR
           echo "REPO=$REPO:  (BASE_URL=$BASE_URL)"
@@ -67,17 +66,19 @@ jobs:
           read SUCCDATE SUCCCONCLUSION SREF SWF RUN_URL <<<$(api_get_trigrun "$BASE_URL" success)
           echo -e "$?\nRUN_URL=$RUN_URL"
           # download artifact list and find section with the wanted file:
-          ARTIFACT_JSON=$(api_get "$RUN_URL/artifacts" | jq -r '.artifacts[]|select(.name=="'$REQFILE'")')
+          ARTIFACT_JSON=$(api_get "$RUN_URL/artifacts" | jq -r '[.artifacts[]|select(.name|test("^requirements"))][0]')
           echo -e "$?\nARTIFACT_JSON=$ARTIFACT_JSON"
           # grab download url:
           DOWNLOAD_URL=$(jq -r '.archive_download_url' <<<$(echo $ARTIFACT_JSON))
           echo "DOWNLOAD_URL=$DOWNLOAD_URL"
+          REQNAME=$(jq -r '.name' <<<$(echo $ARTIFACT_JSON))
+          echo "REQNAME=$REQNAME"
           # get real url:
           LOC=$(api_get "$DOWNLOAD_URL" -i -w '%{redirect_url}' -o /dev/null)
           echo -e "$?\nLOC=>$LOC<"
           # download, unzip and filter the file
           REQUIREMENTS=$(curl -s -XGET "$LOC" | zcat | sed -n '/^oarepo/p; /^nr/p;')
-          echo -e "$?\nselection from $REQFILE:\n$REQUIREMENTS"
+          echo -e "$?\nselection from requirements:\n$REQUIREMENTS"
           # save selected requirements and branch to env
           echo -e "REQUIREMENTS<<EOF\n$REQUIREMENTS\nEOF" >> $GITHUB_ENV
           OUTFILE="$TMP_DIR/${REPO//\//_}.txt"
