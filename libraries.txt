@@ -1,5 +1,5 @@
 oarepo/oarepo-runtime
-oarepo/oarepo-vocabularies
+#oarepo/oarepo-vocabularies
 #oarepo/oarepo-upload-cli
 oarepo/oarepo-requests
 oarepo/oarepo-model-builder
